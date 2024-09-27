@@ -2,8 +2,9 @@
 
 ## Scripts
 
-- hello-world.go
-- http-server.go
+- hello-world
+- http-server
+- http-server (w/ middlewares)
 - ...
 
 ## Sources

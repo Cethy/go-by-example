@@ -42,8 +42,19 @@ go run http-proxy-ssl/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p
 ```shell
 # docker pull redis
 # docker run -d --name redis-counter -p 6379:6379 redis
+# go get github.com/redis/go-redis/v9
 
 go run redis-counter/main.go
+```
+
+### http-proxy-cache
+
+```shell
+# docker pull redis
+# docker run -d --name redis-cache -p 6379:6379 redis
+# go get github.com/redis/go-redis/v9
+
+go run http-proxy-cache/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p=8005] [-ps=8006] [-url=true]
 ```
 
 ## Sources

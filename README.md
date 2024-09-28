@@ -4,31 +4,31 @@
 
 ### hello-world
 
-```
+```shell
 go run hello-world/main.go
 ```
 
 ### http-server
 
-```
+```shell
 go run http-server/main.go [-p=8001]
 ```
 
 ### http-server (w/ middlewares)
 
-```
+```shell
 go run http-server-middleware/main.go [-p=8002]
 ```
 
 ### http-proxy
 
-```
+```shell
 go run http-proxy/main.go [-p=8003] [-url=true]
 ```
 
 ### http-proxy-ssl
 
-```
+```shell
 # brew install mkcert
 # mkcert -install 
 # mkcert localhost 127.0.0.1 ::1
@@ -37,14 +37,21 @@ go run http-proxy/main.go [-p=8003] [-url=true]
 go run http-proxy-ssl/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p=8003] [-ps=8004] [-url=true]
 ```
 
-- ...
+### redis-counter
+
+```shell
+# docker pull redis
+# docker run -d --name redis-counter -p 6379:6379 redis
+
+go run redis-counter/main.go
+```
 
 ## Sources
 
 - https://go.dev/tour/
 - https://gowebexamples.com
 - https://markphelps.me/posts/handling-errors-in-your-http-handlers/
-
+- https://medium.com/@matryer/the-http-handler-wrapper-technique-in-golang-updated-bc7fbcffa702#.e4k81jxd3
 
 ## Useful stuff
 

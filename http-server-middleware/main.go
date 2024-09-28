@@ -3,34 +3,35 @@ package main
 import (
 	"flag"
 	"fmt"
-	http_middleware "go-by-example/libs/http-middleware"
+	httpmiddleware "go-by-example/libs/http-middleware"
 	"log"
 	"net/http"
 )
 
-func middlewares(f http.HandlerFunc) http.HandlerFunc {
-	return http_middleware.Chain(f, http_middleware.Method("GET"), http_middleware.Logging())
-}
-
-func customMiddleware() http_middleware.Middleware {
-	return http_middleware.CreateNewMiddleware(func(w http.ResponseWriter, r *http.Request) {
+func customMiddleware() httpmiddleware.Middleware {
+	return httpmiddleware.CreateNewMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		defer func() { log.Println("Hi! from customMiddleware") }()
 	})
 }
 
-func Hello(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprintf(w, "Welcome to my website!")
+func Hello(w http.ResponseWriter, _ *http.Request) (status int, err error) {
+	_, err = fmt.Fprintf(w, "Welcome to my website!")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return 400, err
+	}
+	return 200, nil
 }
 
 func main() {
 	port := flag.Int("p", 8002, "Port number")
 	flag.Parse()
 
-	http.HandleFunc("/", http_middleware.Chain(middlewares(Hello), customMiddleware()))
+	http.HandleFunc("/", httpmiddleware.Chain(Hello, customMiddleware(), httpmiddleware.Method("GET"), httpmiddleware.Logging(), httpmiddleware.PostLogging()))
 
 	publicDir := http.FileServer(http.Dir("public/"))
-	http.HandleFunc("/public/", middlewares(http.StripPrefix("/public/", publicDir).ServeHTTP))
-	http.HandleFunc("/favicon.ico", middlewares(publicDir.ServeHTTP))
+	http.HandleFunc("/public/", httpmiddleware.ChainOG(http.StripPrefix("/public/", publicDir).ServeHTTP, httpmiddleware.Logging()))
+	http.HandleFunc("/favicon.ico", httpmiddleware.ChainOG(publicDir.ServeHTTP, httpmiddleware.Logging()))
 
 	fmt.Println("Server listening on port:", *port)
 	err := http.ListenAndServe(":"+fmt.Sprint(*port), nil)

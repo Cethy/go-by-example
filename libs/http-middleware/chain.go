@@ -23,7 +23,7 @@ func Chain(f HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
 	return Handle(f)
 }
 
-// Chain applies middlewares to a http.HandlerFunc
+// ChainOG does NOT support post middlewares !
 func ChainOG(f http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
 	return Chain(reverseHandle(f), middlewares...)
 }

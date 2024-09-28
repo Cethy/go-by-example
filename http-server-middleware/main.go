@@ -1,8 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"go-by-example/http-middleware"
+	http_middleware "go-by-example/libs/http-middleware"
 	"log"
 	"net/http"
 )
@@ -17,16 +18,24 @@ func customMiddleware() http_middleware.Middleware {
 	})
 }
 
-func Hello(w http.ResponseWriter, r *http.Request) {
+func Hello(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprintf(w, "Welcome to my website!")
 }
 
 func main() {
+	port := flag.Int("p", 8002, "Port number")
+	flag.Parse()
+
 	http.HandleFunc("/", http_middleware.Chain(middlewares(Hello), customMiddleware()))
 
 	publicDir := http.FileServer(http.Dir("public/"))
 	http.HandleFunc("/public/", middlewares(http.StripPrefix("/public/", publicDir).ServeHTTP))
 	http.HandleFunc("/favicon.ico", middlewares(publicDir.ServeHTTP))
 
-	http.ListenAndServe(":"+fmt.Sprint(8002), nil)
+	fmt.Println("Server listening on port:", *port)
+	err := http.ListenAndServe(":"+fmt.Sprint(*port), nil)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 }

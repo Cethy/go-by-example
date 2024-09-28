@@ -1,13 +1,16 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"net/http"
 )
 
-const port = 8001
-
 func main() {
+	port := flag.Int("p", 8001, "Port number")
+	flag.Parse()
+
 	//http.Handle("/", http.FileServer(http.Dir("./public")))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(r)
@@ -19,5 +22,10 @@ func main() {
 	http.Handle("/public/", http.StripPrefix("/public/", publicDir))
 	http.Handle("/favicon.ico", publicDir)
 
-	http.ListenAndServe(":"+fmt.Sprint(port), nil)
+	fmt.Println("Server listening on port:", *port)
+	err := http.ListenAndServe(":"+fmt.Sprint(*port), nil)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 }

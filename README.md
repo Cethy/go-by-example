@@ -43,6 +43,8 @@ go run http-proxy-ssl/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p
 
 - https://go.dev/tour/
 - https://gowebexamples.com
+- https://markphelps.me/posts/handling-errors-in-your-http-handlers/
+
 
 ## Useful stuff
 

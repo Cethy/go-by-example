@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	http_middleware "go-by-example/libs/http-middleware"
-	http_proxy "go-by-example/libs/http-proxy"
+	httpmiddleware "go-by-example/libs/http-middleware"
+	httpproxy "go-by-example/libs/http-proxy"
 	"log"
 	"net/http"
 )
@@ -14,7 +14,7 @@ func main() {
 	urlMode := flag.Bool("url", false, "tells the executable how the proxy should read the target url ; false for default proxy mode, true for url mode : 'http://localhost:8003/?url=https://example.com'")
 	flag.Parse()
 
-	http.HandleFunc("/", http_middleware.Chain(http_proxy.GetProxyHandler(*urlMode), http_middleware.Logging()))
+	http.HandleFunc("/", httpmiddleware.Chain(httpproxy.GetProxyHandler(*urlMode), httpmiddleware.Logging()))
 
 	fmt.Println("Server listening on port:", *port)
 	err := http.ListenAndServe(":"+fmt.Sprint(*port), nil)

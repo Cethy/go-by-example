@@ -1,46 +1,39 @@
 package http_proxy
 
 import (
+	"errors"
+	httpmiddleware "go-by-example/libs/http-middleware"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 )
 
-func failure(w http.ResponseWriter, error string, code int) {
-	http.Error(w, error, code)
-	log.Println(code, error)
-}
-func success(w http.ResponseWriter, src io.Reader) {
-	_, err := io.Copy(w, src)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	log.Println(200, "OK")
-}
-
-func GetProxyHandler(urlMode bool) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func GetProxyHandler(urlMode bool) httpmiddleware.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) (status int, err error) {
 		destURL, destErr := url.Parse(r.URL.String())
 		if urlMode {
 			destURL, destErr = url.Parse(r.URL.Query().Get("url"))
 			if destURL.String() == "" {
-				failure(w, "Parameter missing", http.StatusBadRequest)
-				return
+				http.Error(w, "Parameter missing", http.StatusBadRequest)
+				return http.StatusBadRequest, errors.New("parameter missing")
 			}
 		}
 		if destErr != nil {
-			failure(w, "Parameter malformed", http.StatusBadRequest)
-			return
+			http.Error(w, "Parameter malformed", http.StatusBadRequest)
+			return http.StatusBadRequest, destErr
 		}
 
 		res, getErr := http.Get(destURL.String())
 		if getErr != nil {
-			failure(w, "Wrong parameter format or bad reply from target destination", http.StatusBadRequest)
-			return
+			http.Error(w, "Wrong parameter format or bad reply from target destination", http.StatusBadRequest)
+			return http.StatusBadRequest, getErr
 		}
 
-		success(w, res.Body)
+		_, err = io.Copy(w, res.Body)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return http.StatusBadRequest, err
+		}
+		return http.StatusOK, nil
 	}
 }

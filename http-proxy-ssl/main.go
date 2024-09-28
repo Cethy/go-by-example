@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	http_middleware "go-by-example/libs/http-middleware"
-	http_proxy "go-by-example/libs/http-proxy"
+	httpmiddleware "go-by-example/libs/http-middleware"
+	httpproxy "go-by-example/libs/http-proxy"
 	"log"
 	"net/http"
 )
@@ -23,10 +23,10 @@ func main() {
 	}
 
 	httpServer := http.NewServeMux()
-	httpServer.HandleFunc("/", http_middleware.Chain(http_proxy.GetProxyHandler(*urlMode), http_middleware.LoggingPre("[HTTP ]")))
+	httpServer.HandleFunc("/", httpmiddleware.Chain(httpproxy.GetProxyHandler(*urlMode), httpmiddleware.LoggingPre("[HTTP ]"), httpmiddleware.PostLogging()))
 
 	httpsServer := http.NewServeMux()
-	httpsServer.HandleFunc("/", http_middleware.Chain(http_proxy.GetProxyHandler(*urlMode), http_middleware.LoggingPre("[HTTPS]")))
+	httpsServer.HandleFunc("/", httpmiddleware.Chain(httpproxy.GetProxyHandler(*urlMode), httpmiddleware.LoggingPre("[HTTPS]"), httpmiddleware.PostLogging()))
 
 	fmt.Println("http listening on port:", *port)
 	fmt.Println("https listening on port:", *portSSL)

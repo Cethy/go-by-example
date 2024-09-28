@@ -12,3 +12,10 @@ func Logging() Middleware {
 		defer func() { log.Println(time.Since(start), "|", r.Method, r.URL) }()
 	})
 }
+
+func LoggingPre(prefix string) Middleware {
+	return CreateNewMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		defer func() { log.Println(prefix, time.Since(start), "|", r.Method, r.URL) }()
+	})
+}

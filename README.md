@@ -29,7 +29,12 @@ go run http-proxy/main.go [-p=8003] [-url=true]
 ### http-proxy-ssl
 
 ```
-go run http-proxy/main.go [-p=8004] [-url=true]
+# brew install mkcert
+# mkcert -install 
+# mkcert localhost 127.0.0.1 ::1
+## mkcert -uninstall
+
+go run http-proxy-ssl/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p=8003] [-ps=8004] [-url=true]
 ```
 
 - ...
@@ -57,3 +62,5 @@ go get -u github.com/gorilla/mux
 
 - what modules actually means ?
 - how much concurrent connection can http-server or http-proxy can handle ?
+- monitoring ?
+- what is a `go` routine ?

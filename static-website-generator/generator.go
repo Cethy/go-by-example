@@ -87,14 +87,9 @@ func build(srcFilePathname string) {
 	srcDir := filepath.Join(srcFilePathname, "./html")
 
 	// clean output directory
-	_, err := os.Stat(outputDir)
+	err := os.RemoveAll(outputDir)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			panic(err)
-		}
-	} else {
-		err := os.RemoveAll(outputDir)
-		if err != nil {
 			panic(err)
 		}
 	}

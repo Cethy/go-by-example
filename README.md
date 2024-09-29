@@ -57,6 +57,15 @@ go run redis-counter/main.go
 go run http-proxy-cache/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p=8005] [-ps=8006] [-url=true]
 ```
 
+### static-website-builder
+
+```shell
+# build
+go run static-website-generator/generator.go
+# serve
+go run static-website-generator/serve.go
+```
+
 ## Sources
 
 - https://go.dev/tour/

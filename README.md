@@ -57,6 +57,12 @@ go run redis-counter/main.go
 go run http-proxy-cache/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p=8005] [-ps=8006] [-url=true]
 ```
 
+### regex
+
+```shell
+go run regex/main.go -m mf{ze}fz{e}f{}foo
+```
+
 ### static-website-builder
 
 ```shell

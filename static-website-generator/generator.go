@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"io"
 	"log"
@@ -86,8 +87,12 @@ func build(srcFilePathname string) {
 	srcDir := filepath.Join(srcFilePathname, "./html")
 
 	// clean output directory
-	stat, err := os.Stat(outputDir)
-	if stat.IsDir() {
+	_, err := os.Stat(outputDir)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			panic(err)
+		}
+	} else {
 		err := os.RemoveAll(outputDir)
 		if err != nil {
 			panic(err)

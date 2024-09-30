@@ -1,8 +1,7 @@
 package plugin_article
 
 import (
-	plugin_fragment "go-by-example/static-website-generator/plugin-fragment"
-	"slices"
+	pluginfragment "go-by-example/static-website-generator/plugin-fragment"
 	"strings"
 )
 
@@ -25,22 +24,21 @@ func GetArticlesData() map[string]Article {
 	return articles
 }
 
-func getIndexArticleListItem(link, title, imgSrc string) string {
-	/*link := "/article.html"
-	title := "foo"
-	imgSrc := "/static/article1.jpg"*/
+func getIndexArticleListItem(link, title, imgSrc, srcDir string) string {
+	article := pluginfragment.GetFragmentContent("article-list-item", srcDir)
 
-	return `<a href="` + link + `" class="p-4 md:w-1/2 hover:underline" title="` + title + `">
-    <img src="` + imgSrc + `" class="mb-3 rounded-lg" alt="image article">
-    <h3>` + title + `</h3>
-</a>`
+	article = strings.ReplaceAll(article, "{link}", link)
+	article = strings.ReplaceAll(article, "{title}", title)
+	article = strings.ReplaceAll(article, "{imgSrc}", imgSrc)
+
+	return article
 }
 
-func getIndexArticleList() string {
+func getIndexArticleList(srcDir string) string {
 	articles := GetArticlesData()
 	list := ""
 	for link, article := range articles {
-		list = list + getIndexArticleListItem(link, article.Title, article.ImgSrc)
+		list = list + getIndexArticleListItem(link, article.Title, article.ImgSrc, srcDir)
 	}
 	return list
 }
@@ -48,10 +46,7 @@ func getIndexArticleList() string {
 var pluginFragmentId = "{index-articles}"
 
 func PreBuildFile(fileContent, srcDir string) (string, error) {
-	fragmentIds := plugin_fragment.GetAllFragmentIds(fileContent)
+	fileContent = strings.ReplaceAll(fileContent, pluginFragmentId, getIndexArticleList(srcDir))
 
-	if slices.Contains(fragmentIds, pluginFragmentId) {
-		fileContent = strings.ReplaceAll(fileContent, pluginFragmentId, getIndexArticleList())
-	}
 	return fileContent, nil
 }

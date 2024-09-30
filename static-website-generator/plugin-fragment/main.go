@@ -10,7 +10,7 @@ import (
 
 var fragments = make(map[string]string)
 
-func getFragmentContent(fragmentId, srcDir string) string {
+func GetFragmentContent(fragmentId, srcDir string) string {
 	fragmentId = filepath.Join(srcDir, "../fragments", fragmentId+".html")
 
 	if fragments[fragmentId] == "" {
@@ -35,7 +35,7 @@ func PreBuildFile(fileContent, srcDir string) (string, error) {
 	// insert fragments
 	requiredFragments := GetAllFragmentIds(fileContent)
 	for _, fragmentId := range requiredFragments {
-		fragment := getFragmentContent(fragmentId[1:len(fragmentId)-1], srcDir)
+		fragment := GetFragmentContent(fragmentId[1:len(fragmentId)-1], srcDir)
 		fileContent = strings.ReplaceAll(fileContent, fragmentId, fragment)
 	}
 

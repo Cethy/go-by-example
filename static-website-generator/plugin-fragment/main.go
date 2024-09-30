@@ -8,15 +8,10 @@ import (
 	"strings"
 )
 
-func isFragment(filename string) bool {
-	runeSlice := []rune(filename)
-	return runeSlice[0] == '{' && runeSlice[len(runeSlice)-1] == '}'
-}
-
 var fragments = make(map[string]string)
 
 func getFragmentContent(fragmentId, srcDir string) string {
-	fragmentId = filepath.Join(srcDir, fragmentId+".html")
+	fragmentId = filepath.Join(srcDir, "../fragments", fragmentId+".html")
 
 	if fragments[fragmentId] == "" {
 		readFile, err := os.ReadFile(fragmentId)
@@ -40,7 +35,7 @@ func PreBuildFile(fileContent, srcDir string) (string, error) {
 	// insert fragments
 	requiredFragments := GetAllFragmentIds(fileContent)
 	for _, fragmentId := range requiredFragments {
-		fragment := getFragmentContent(fragmentId, srcDir)
+		fragment := getFragmentContent(fragmentId[1:len(fragmentId)-1], srcDir)
 		fileContent = strings.ReplaceAll(fileContent, fragmentId, fragment)
 	}
 

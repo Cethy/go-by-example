@@ -52,12 +52,15 @@ func getIndexArticleList(srcDir string) string {
 
 var articleFilesBuilt = []string{}
 
-func buildArticleFile(srcDir, targetPath string) {
+func buildArticleFile(srcDir, targetPath string, article Article) {
 	if slices.Contains(articleFilesBuilt, targetPath) {
 		return
 	}
 
 	articleRaw := pluginfragment.GetFragmentContent(pluginFragmentArticleFilename, srcDir)
+
+	articleRaw = strings.ReplaceAll(articleRaw, "{title}", article.Title)
+	articleRaw = strings.ReplaceAll(articleRaw, "{imgSrc}", article.ImgSrc)
 
 	fileContent, err := generator.PreProcess(articleRaw)
 	if err != nil {
@@ -79,8 +82,8 @@ func PreBuildFile(fileContent string, config generator.Config) (string, error) {
 	fileContent = strings.ReplaceAll(fileContent, pluginFragmentListItemId, getIndexArticleList(config.SrcDir))
 
 	articles := getArticlesData()
-	for link := range articles {
-		buildArticleFile(config.SrcDir, filepath.Join(config.OutputDir, link))
+	for link, article := range articles {
+		buildArticleFile(config.SrcDir, filepath.Join(config.OutputDir, link), article)
 	}
 
 	pluginIsRunning = false

@@ -34,7 +34,11 @@ func CopyFile(srcPath, targetPath string) {
 }
 
 func BuildFile(targetPath, fileContent string) {
-	err := os.WriteFile(targetPath, []byte(fileContent), 0644)
+	err := os.MkdirAll(filepath.Dir(targetPath), 0755) // @todo check perms
+	if err != nil {
+		panic(err)
+	}
+	err = os.WriteFile(targetPath, []byte(fileContent), 0644)
 	if err != nil {
 		panic(err)
 	}

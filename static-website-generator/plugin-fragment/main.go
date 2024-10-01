@@ -1,6 +1,7 @@
 package plugin_fragment
 
 import (
+	"go-by-example/static-website-generator/generator"
 	"log"
 	"os"
 	"path/filepath"
@@ -31,11 +32,11 @@ func GetAllFragmentIds(fileContent string) []string {
 	return r.FindAllString(fileContent, -1)
 }
 
-func PreBuildFile(fileContent, srcDir string) (string, error) {
+func PreBuildFile(fileContent string, config generator.Config) (string, error) {
 	// insert fragments
 	requiredFragments := GetAllFragmentIds(fileContent)
 	for _, fragmentId := range requiredFragments {
-		fragment := GetFragmentContent(fragmentId[1:len(fragmentId)-1], srcDir)
+		fragment := GetFragmentContent(fragmentId[1:len(fragmentId)-1], config.SrcDir)
 		fileContent = strings.ReplaceAll(fileContent, fragmentId, fragment)
 	}
 

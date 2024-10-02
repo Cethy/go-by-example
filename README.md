@@ -66,6 +66,8 @@ go run regex/main.go -m mf{ze}fz{e}f{}foo
 ### static-website-builder
 
 ```shell
+# go get github.com/fsnotify/fsnotify
+
 # build
 go run static-website-generator/generator.go
 # serve

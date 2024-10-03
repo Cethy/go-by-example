@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"go-by-example/static-website-generator/generator"
-	plugin_article "go-by-example/static-website-generator/plugin-article"
-	pluginfragment "go-by-example/static-website-generator/plugin-fragment"
+	transformerarticle "go-by-example/static-website-generator/generator/transformer-article"
+	transformerFragment "go-by-example/static-website-generator/generator/transformer-fragment"
 	"os"
 	"path/filepath"
-	"slices"
 	"time"
 )
 
@@ -66,9 +65,12 @@ func watchLoop(w *fsnotify.Watcher, callback func()) {
 			if !ok { // Channel was closed (i.e. Watcher.Close() was called).
 				return
 			}
-			if slices.Contains(watchedOps, e.Op) && e.Name[len(e.Name)-1] != '~' {
-				printTime("%s", e)
-				callback()
+			for _, watchedOp := range watchedOps {
+				if e.Op.Has(watchedOp) && e.Name[len(e.Name)-1] != '~' {
+					printTime("%s", e.Op)
+					callback()
+					break
+				}
 			}
 		}
 	}
@@ -93,20 +95,40 @@ func getAllSubDir(srcDir string) []string {
 	return subDirs
 }
 
-func main() {
-	srcFilePathname := flag.String("srcFilePathname", "./static-website-generator", "pathname to src files")
+func RunGenerator(basePathname string) {
+	g := generator.NewGenerator(generator.Config{
+		ProcessableExtensions: []string{".html"},
+		OutputDir:             filepath.Join(basePathname, "./output"),
+		SrcDir:                filepath.Join(basePathname, "./html"),
+	})
 
+	fragmentTransformer := transformerFragment.NewTransformer(transformerFragment.Config{
+		FragmentSrcDir: filepath.Join(basePathname, "./fragments"),
+	})
+
+	articleTransformer := transformerarticle.NewTransformer(
+		transformerarticle.GetDefaultConfig(),
+		g,
+		fragmentTransformer,
+	)
+
+	// order matter
+	g.RegisterTransformer(articleTransformer)
+	g.RegisterTransformer(fragmentTransformer)
+
+	g.Build()
+}
+
+func main() {
+	basePathname := flag.String("basePathname", "./static-website-generator", "pathname to src files")
 	flag.Parse()
 
-	// @todo restart generator variables
-	config := generator.Config{
-		ProcessableExtensions: []string{".html"},
-		PreFileProcessors:     []func(fileContent string, config generator.Config) (string, error){plugin_article.PreBuildFile, pluginfragment.PreBuildFile},
-		OutputDir:             filepath.Join(*srcFilePathname, "./output"),
-		SrcDir:                filepath.Join(*srcFilePathname, "./html"),
-	}
+	watchFilePaths := append(
+		getAllSubDir(filepath.Join(*basePathname, "./html")),
+		getAllSubDir(filepath.Join(*basePathname, "./fragments"))...,
+	)
 
 	watch(func() {
-		generator.Build(config)
-	}, getAllSubDir(config.SrcDir)...)
+		RunGenerator(*basePathname)
+	}, watchFilePaths...)
 }

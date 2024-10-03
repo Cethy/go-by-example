@@ -11,99 +11,15 @@
     </a>
 </header>
 <section class="mb-10 w-full min-h-[calc(100vh_-_theme(spacing.64))]">
-
     <h1 class="mb-5 text-3xl font-bold">
         {title}
     </h1>
 
     <img src="{imgSrc}" class="object-cover h-32 w-full mb-5 rounded-lg" alt="image article">
 
-    <p class="text-lg mb-5">
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-    </p>
-
-    <p class="mb-5">
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-    </p>
-
-    <p class="mb-5">
-        Lorem, <a href="#" class="text-blue-600 hover:underline">ipsum dolor sit amet consectetur</a> adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-    </p>
-
-    <h2 class="mb-5 text-2xl font-bold">
-        Lorem, ipsum dolor sit
-    </h2>
-
-    <img src="/static/article1.jpg" class="object-cover h-32 w-full mb-5 rounded-lg" alt="image article">
-
-
-    <p class="text-lg mb-5">
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-    </p>
-
-    <p class="mb-5">
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-    </p>
-
-    <p class="mb-5">
-        Lorem, <a href="#" class="text-blue-600 hover:underline">ipsum dolor sit amet consectetur</a> adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-    </p>
-
-    <ul class="list-disc mb-5 list-inside p-4 bg-slate-800 rounded-lg">
-        <li>VSCode</li>
-        <li>Tailwind CSS</li>
-        <li>Laravel</li>
-    </ul>
-
-    <p class="mb-5">
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-
-    </p>
-
-    <p class="mb-5">
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-    </p>
-
-    <h2 class="mb-5 text-2xl font-bold">
-        Lorem, ipsum dolor sit
-    </h2>
-
-    <p class="mb-5">
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-
-    </p>
-
-    <img src="/static/article1/tw1.png" class="w-full mb-5 rounded-lg" alt="image article">
-
-    <h2 class="mb-5 text-2xl font-bold">
-        Conclusion
-    </h2>
-
-    <p class="mb-5">
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Tenetur ut id nobis facilis itaque? Quos fuga praesentium adipisci laudantium iure asperiores, ab sapiente omnis! Deserunt consequatur animi libero aperiam nemo!
-    </p>
-
-    <div class="text-xs pt-5">
-        <span>Sources :</span>
-        <ul class="list-disc list-inside">
-            <li>
-                <a href="https://10015.io/tools/tweet-to-image-converter" target="_blank" class="hover:underline">
-                    https://10015.io/tools/tweet-to-image-converter
-                </a>
-            </li>
-            <li>
-                <a href="https://twitter.com/0gust1/status/1065685008650784773" target="_blank" class="hover:underline">
-                    https://twitter.com/0gust1/status/1065685008650784773
-                </a>
-            </li>
-            <li>
-                <a href="https://www.youtube.com/watch?v=jfKfPfyJRdk" target="_blank" class="hover:underline">
-                    https://www.youtube.com/watch?v=jfKfPfyJRdk
-                </a>
-            </li>
-        </ul>
-    </div>
-
+    <article class="flex flex-col gap-4">
+    {content}
+    </article>
 </section>
 
 {footer}

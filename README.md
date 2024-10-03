@@ -63,10 +63,20 @@ go run http-proxy-cache/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [
 go run regex/main.go -m mf{ze}fz{e}f{}foo
 ```
 
+### markdown2tailwindcss
+
+```shell
+# go get github.com/yuin/goldmark
+
+go run markdown2tailwindcss/main.go
+```
+
+
 ### static-website-builder
 
 ```shell
 # go get github.com/fsnotify/fsnotify
+# go get github.com/yuin/goldmark-meta
 
 # build
 go run static-website-generator/generator.go

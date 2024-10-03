@@ -14,7 +14,7 @@ type ClassNameTransformer struct {
 	Config Config
 }
 
-func (c *ClassNameTransformer) Transform(node *ast.Document, reader text.Reader, pc parser.Context) {
+func (c *ClassNameTransformer) Transform(node *ast.Document, _ text.Reader, _ parser.Context) {
 	ast.Walk(node, func(n ast.Node, entering bool) (status ast.WalkStatus, err error) {
 		if entering {
 			n.SetAttributeString("class", c.Config.ClassNameProvider(n))

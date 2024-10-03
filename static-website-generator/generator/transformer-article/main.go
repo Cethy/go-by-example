@@ -1,4 +1,4 @@
-package plugin_article
+package transformer_article
 
 import (
 	"bytes"
@@ -10,18 +10,39 @@ import (
 	"github.com/yuin/goldmark/util"
 	goldmarkTailwindcss "go-by-example/libs/goldmark-tailwindcss"
 	"go-by-example/static-website-generator/generator"
-	pluginfragment "go-by-example/static-website-generator/plugin-fragment"
+	transformerfragment "go-by-example/static-website-generator/generator/transformer-fragment"
 	"os"
 	"path"
-	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
 )
 
-var pluginFragmentArticleFilename = "article"
-var pluginFragmentListItemFilename = "article-list-item"
-var pluginFragmentListItemId = "{index-articles}"
+type Config struct {
+	fragmentArticleFilename  string
+	fragmentListItemFilename string
+	fragmentListItemId       string
+}
+
+func GetDefaultConfig() Config {
+	return Config{
+		fragmentArticleFilename:  "article",
+		fragmentListItemFilename: "article-list-item",
+		fragmentListItemId:       "{index-articles}",
+	}
+}
+
+type ArticleTransformer interface {
+	transform(fileContent string) (string, error)
+}
+
+type articleTransformer struct {
+	Config              Config
+	fragmentTransformer transformerfragment.FragmentTransformer
+	generator           generator.Generator
+	pluginIsRunning     bool
+	articleFilesBuilt   []string
+}
 
 type Article struct {
 	Filename string
@@ -37,7 +58,7 @@ func (s ArticleSlice) Len() int           { return len(s) }
 func (s ArticleSlice) Less(i, j int) bool { return s[i].Order < s[j].Order }
 func (s ArticleSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
-func getArticlesData() ArticleSlice {
+func (p *articleTransformer) getArticlesData() ArticleSlice {
 	var articles ArticleSlice
 
 	mdConverter := goldmark.New(
@@ -78,7 +99,7 @@ func getArticlesData() ArticleSlice {
 			metaData := meta.Get(context)
 
 			articles = append(articles, Article{
-				Filename: dir.Name() + ".html",
+				Filename: "projects/" + dir.Name() + ".html",
 				Title:    metaData["Title"].(string),
 				ImgSrc:   metaData["ImgSrc"].(string),
 				Order:    metaData["Order"].(int),
@@ -92,8 +113,8 @@ func getArticlesData() ArticleSlice {
 	return articles
 }
 
-func getIndexArticleListItem(articleData Article, srcDir string) string {
-	article := pluginfragment.GetFragmentContent(pluginFragmentListItemFilename, srcDir)
+func (p *articleTransformer) getIndexArticleListItem(articleData Article) string {
+	article := p.fragmentTransformer.GetFragmentContent(p.Config.fragmentListItemFilename)
 
 	article = strings.ReplaceAll(article, "{link}", articleData.Filename)
 	article = strings.ReplaceAll(article, "{title}", articleData.Title)
@@ -102,52 +123,57 @@ func getIndexArticleListItem(articleData Article, srcDir string) string {
 	return article
 }
 
-func getIndexArticleList(srcDir string) string {
-	articles := getArticlesData()
+func (p *articleTransformer) getIndexArticleList() string {
+	articles := p.getArticlesData()
 	list := ""
 	for _, article := range articles {
-		list = list + getIndexArticleListItem(article, srcDir)
+		list = list + p.getIndexArticleListItem(article)
 	}
 	return list
 }
 
-var articleFilesBuilt []string
-
-func buildArticleFile(srcDir, targetPath string, article Article) {
-	if slices.Contains(articleFilesBuilt, targetPath) {
+func (p *articleTransformer) buildArticleFile(relativeFilePath string, article Article) {
+	if slices.Contains(p.articleFilesBuilt, relativeFilePath) {
 		return
 	}
 
-	articleRaw := pluginfragment.GetFragmentContent(pluginFragmentArticleFilename, srcDir)
+	articleRaw := p.fragmentTransformer.GetFragmentContent(p.Config.fragmentArticleFilename)
 
 	articleRaw = strings.ReplaceAll(articleRaw, "{title}", article.Title)
 	articleRaw = strings.ReplaceAll(articleRaw, "{imgSrc}", article.ImgSrc)
 	articleRaw = strings.ReplaceAll(articleRaw, "{content}", article.Content)
-	fileContent, err := generator.PreProcess(articleRaw)
+	fileContent, err := p.generator.InvokeTransformers(articleRaw)
 	if err != nil {
 		panic(err)
 	}
 
-	articleFilesBuilt = append(articleFilesBuilt, targetPath)
-	generator.BuildFile(targetPath, fileContent)
+	p.generator.BuildFile(relativeFilePath, fileContent)
+	p.articleFilesBuilt = append(p.articleFilesBuilt, relativeFilePath)
 }
 
-var pluginIsRunning = false
-
-func PreBuildFile(fileContent string, config generator.Config) (string, error) {
-	if pluginIsRunning {
+func (p *articleTransformer) Transform(fileContent string) (string, error) {
+	if p.pluginIsRunning {
 		return fileContent, nil
 	}
-	pluginIsRunning = true
+	p.pluginIsRunning = true
 
-	fileContent = strings.ReplaceAll(fileContent, pluginFragmentListItemId, getIndexArticleList(config.SrcDir))
+	fileContent = strings.ReplaceAll(fileContent, p.Config.fragmentListItemId, p.getIndexArticleList())
 
-	articles := getArticlesData()
+	articles := p.getArticlesData()
 	for _, article := range articles {
-		buildArticleFile(config.SrcDir, filepath.Join(config.OutputDir, article.Filename), article)
+		p.buildArticleFile(article.Filename, article)
 	}
 
-	pluginIsRunning = false
+	p.pluginIsRunning = false
 
 	return fileContent, nil
+}
+
+func NewTransformer(config Config, generator generator.Generator, fragmentTransformer transformerfragment.FragmentTransformer) generator.Transformer {
+	return &articleTransformer{
+		Config:              config,
+		generator:           generator,
+		fragmentTransformer: fragmentTransformer,
+		pluginIsRunning:     false,
+	}
 }

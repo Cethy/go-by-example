@@ -9,7 +9,32 @@ import (
 	"slices"
 )
 
-func CopyFile(srcPath, targetPath string) {
+type Config struct {
+	ProcessableExtensions []string // = []string{".html"}
+	SrcDir                string
+	OutputDir             string
+}
+
+type Transformer interface {
+	Transform(content string) (string, error)
+}
+
+type Generator interface {
+	Build()
+	RegisterTransformer(transformer Transformer)
+	InvokeTransformers(fileContent string) (string, error)
+	BuildFile(relativeFilePath, fileContent string)
+}
+
+type generator struct {
+	Config       Config
+	transformers []Transformer
+}
+
+func (g *generator) copyFile(relativeFilePath string) {
+	srcPath := filepath.Join(g.Config.SrcDir, relativeFilePath)
+	targetPath := filepath.Join(g.Config.OutputDir, relativeFilePath)
+
 	// simply copy the file
 	r, err := os.Open(srcPath)
 	if err != nil {
@@ -33,7 +58,9 @@ func CopyFile(srcPath, targetPath string) {
 	log.Println("copied", targetPath)
 }
 
-func BuildFile(targetPath, fileContent string) {
+func (g *generator) BuildFile(relativeTargetFilePath, fileContent string) {
+	targetPath := filepath.Join(g.Config.OutputDir, relativeTargetFilePath)
+
 	err := os.MkdirAll(filepath.Dir(targetPath), 0755) // @todo check perms
 	if err != nil {
 		panic(err)
@@ -46,10 +73,10 @@ func BuildFile(targetPath, fileContent string) {
 	log.Println("built", targetPath)
 }
 
-func PreProcess(fileContent string) (string, error) {
+func (g *generator) InvokeTransformers(fileContent string) (string, error) {
 	var err error
-	for _, preProcessor := range config.PreFileProcessors {
-		fileContent, err = preProcessor(fileContent, config)
+	for _, transformer := range g.transformers {
+		fileContent, err = transformer.Transform(fileContent)
 		if err != nil {
 			return fileContent, err
 		}
@@ -57,72 +84,66 @@ func PreProcess(fileContent string) (string, error) {
 	return fileContent, nil
 }
 
-func processFile(srcPath, targetPath string) {
-	ext := filepath.Ext(srcPath)
-	if !slices.Contains(config.ProcessableExtensions, ext) {
-		CopyFile(srcPath, targetPath)
+func (g *generator) processFile(relativeFilePath string) {
+	ext := filepath.Ext(relativeFilePath)
+	if !slices.Contains(g.Config.ProcessableExtensions, ext) {
+		g.copyFile(relativeFilePath)
 		return
 	}
 
-	readFile, err := os.ReadFile(srcPath)
+	readFile, err := os.ReadFile(filepath.Join(g.Config.SrcDir, relativeFilePath))
 	if err != nil {
 		panic(err)
 	}
 
-	fileContent, err := PreProcess(string(readFile))
+	fileContent, err := g.InvokeTransformers(string(readFile))
 	if err != nil {
 		panic(err)
 	}
 
-	BuildFile(targetPath, fileContent)
+	g.BuildFile(relativeFilePath, fileContent)
 }
 
-func processDir(dirPath string) {
-	dir, err := os.ReadDir(filepath.Join(config.SrcDir, dirPath))
+func (g *generator) processHtmlDir(relativeDirPath string) {
+	dir, err := os.ReadDir(filepath.Join(g.Config.SrcDir, relativeDirPath))
 	if err != nil {
 		panic(err)
 	}
 
-	err = os.MkdirAll(filepath.Join(config.OutputDir, dirPath), 0755) // @todo check perms
+	err = os.MkdirAll(filepath.Join(g.Config.OutputDir, relativeDirPath), 0755) // @todo check perms
 	if err != nil {
 		panic(err)
 	}
 
 	for _, file := range dir {
 		if file.IsDir() {
-			processDir(filepath.Join(dirPath, file.Name()))
+			g.processHtmlDir(filepath.Join(relativeDirPath, file.Name()))
 			continue
 		}
-		srcPath := filepath.Join(config.SrcDir, dirPath, file.Name())
-		targetPath := filepath.Join(config.OutputDir, dirPath, file.Name())
-
-		processFile(srcPath, targetPath)
+		g.processFile(filepath.Join(relativeDirPath, file.Name()))
 	}
 }
 
-type Config struct {
-	ProcessableExtensions []string // = []string{".html"}
-	PreFileProcessors     []func(fileContent string, config Config) (string, error)
-	SrcDir                string
-	OutputDir             string
-}
-
-var config Config
-
-func Build(newConfig Config) {
-	config = newConfig
-
+func (g *generator) Build() {
 	// clean output directory
-	err := os.RemoveAll(config.OutputDir)
+	err := os.RemoveAll(g.Config.OutputDir)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			panic(err)
 		}
 	}
-	err = os.MkdirAll(config.OutputDir, 0755) // @todo check perms
+	err = os.MkdirAll(g.Config.OutputDir, 0755) // @todo check perms
 	if err != nil {
 		panic(err)
 	}
 
-	processDir(".")
+	g.processHtmlDir(".")
+}
+
+func (g *generator) RegisterTransformer(processor Transformer) {
+	g.transformers = append(g.transformers, processor)
+}
+
+func NewGenerator(config Config) Generator {
+	return &generator{Config: config}
 }

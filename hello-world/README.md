@@ -7,4 +7,6 @@ ImgSrc: /static/article1.jpg
 
 # Hello World program
 
-nothing much to see here ;)
+## Instructions
+
+Make a program print out "Hello world" in the console.

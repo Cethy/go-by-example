@@ -88,7 +88,7 @@ func (p *articleTransformer) getArticlesData() ArticleSlice {
 	}
 	for _, dir := range root {
 		if dir.IsDir() {
-			articleMd, err := os.ReadFile(path.Join(rootPath, dir.Name(), "article.md"))
+			articleMd, err := os.ReadFile(path.Join(rootPath, dir.Name(), "README.md"))
 			if err != nil {
 				continue
 			}

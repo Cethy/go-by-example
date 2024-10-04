@@ -7,4 +7,4 @@ ImgSrc: /static/article1.jpg
 
 # Hello World program
 
-nothing much to say here ;)
+nothing much to see here ;)

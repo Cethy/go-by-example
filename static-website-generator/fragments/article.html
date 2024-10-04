@@ -5,17 +5,14 @@
 
 <body class="bg-gradient-to-b from-slate-800 to-slate-950 antialiased px-4 w-full max-w-[48rem] mx-auto">
 <header class="flex gap-10 mt-5 mb-20 items-center w-full">
-    <a href="/" class="text-xl font-bold border-b-4">Project list</a>
-    <a href="#" target="_blank" class="ms-auto">
-        <i class="bi bi-twitter-x text-2xl"></i>
-    </a>
+    <a href="{basePublicPath}" class="text-xl font-bold border-b-4">Project list</a>
 </header>
 <section class="mb-10 w-full min-h-[calc(100vh_-_theme(spacing.64))]">
     <h1 class="mb-5 text-3xl font-bold">
         {title}
     </h1>
 
-    <img src="{imgSrc}" class="object-cover h-32 w-full mb-5 rounded-lg" alt="image article">
+    <img src="{basePublicPath}{imgSrc}" class="object-cover h-32 w-full mb-5 rounded-lg" alt="image article">
 
     <article class="flex flex-col gap-4">
     {content}

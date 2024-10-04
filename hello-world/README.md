@@ -2,7 +2,7 @@
 Order: 0
 Title: Hello World
 Summary: Hello World program
-ImgSrc: /static/article1.jpg
+ImgSrc: static/article1.jpg
 ---
 
 # Hello World program

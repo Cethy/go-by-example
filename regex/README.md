@@ -2,7 +2,7 @@
 Order: 7
 Title: Regex
 Summary: regex
-ImgSrc: /static/article1.jpg
+ImgSrc: static/article1.jpg
 ---
 
 # Regex exploration

@@ -160,12 +160,12 @@ func (p *articleTransformer) buildArticleFile(article Article) {
 	articleRaw = strings.ReplaceAll(articleRaw, "{imgSrc}", article.ImgSrc)
 	articleRaw = strings.ReplaceAll(articleRaw, "{content}", article.Content)
 	articleRaw = strings.ReplaceAll(articleRaw, "{github-link}", p.getGithubLink(article))
-	fileContent, err := p.generator.InvokeTransformers(articleRaw)
+	/*fileContent, err := p.generator.InvokeTransformers(articleRaw)
 	if err != nil {
 		panic(err)
-	}
+	}*/
 
-	p.generator.BuildFile(relativeFilePath, fileContent)
+	p.generator.BuildFile(relativeFilePath, articleRaw)
 	p.articleFilesBuilt = append(p.articleFilesBuilt, relativeFilePath)
 }
 

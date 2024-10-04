@@ -2,7 +2,7 @@
 Order: 5
 Title: Redis counter
 Summary: Redis counter
-ImgSrc: /static/article3.jpg
+ImgSrc: static/article3.jpg
 ---
 
 # Redis counter

@@ -2,7 +2,7 @@
 Order: 3
 Title: HTTP Proxy
 Summary: Basic HTTP Proxy
-ImgSrc: /static/article1.jpg
+ImgSrc: static/article1.jpg
 ---
 
 # HTTP Proxy

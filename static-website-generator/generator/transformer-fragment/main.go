@@ -2,7 +2,6 @@ package transformer_fragment
 
 import (
 	"go-by-example/static-website-generator/generator"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -21,6 +20,7 @@ type FragmentTransformer interface {
 type fragmentTransformer struct {
 	Config    Config
 	fragments map[string]string
+	generator generator.Generator
 }
 
 func (p *fragmentTransformer) GetFragmentContent(fragmentId string) string {
@@ -29,11 +29,13 @@ func (p *fragmentTransformer) GetFragmentContent(fragmentId string) string {
 	if p.fragments[fragmentPath] == "" {
 		readFile, err := os.ReadFile(fragmentPath)
 		if err != nil {
-			log.Println("WARNING", "cannot find file for fragment", fragmentPath)
-			return ""
+			//log.Println("WARNING", "cannot find file for fragment", fragmentPath)
+			return "{" + fragmentId + "}"
 		}
 
-		p.fragments[fragmentPath] = string(readFile)
+		fileContent, err := p.generator.InvokeTransformers(string(readFile))
+
+		p.fragments[fragmentPath] = fileContent
 	}
 	return p.fragments[fragmentPath]
 }
@@ -55,6 +57,10 @@ func (p *fragmentTransformer) Transform(fileContent string) (string, error) {
 	return fileContent, nil
 }
 
-func NewTransformer(config Config) FragmentTransformer {
-	return &fragmentTransformer{Config: config, fragments: make(map[string]string)}
+func NewTransformer(config Config, generator generator.Generator) FragmentTransformer {
+	return &fragmentTransformer{
+		Config:    config,
+		fragments: make(map[string]string),
+		generator: generator,
+	}
 }

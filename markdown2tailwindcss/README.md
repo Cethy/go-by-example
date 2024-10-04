@@ -2,7 +2,7 @@
 Order: 8
 Title: Markdown2tailwindcss
 Summary: Markdown2tailwindcss implementation
-ImgSrc: /static/article1.jpg
+ImgSrc: static/article1.jpg
 ---
 
 # Markdown to html/tailwindCSS

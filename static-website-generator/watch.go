@@ -6,6 +6,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"go-by-example/static-website-generator/generator"
 	transformerarticle "go-by-example/static-website-generator/generator/transformer-article"
+	transformerbasepublicpath "go-by-example/static-website-generator/generator/transformer-basePublicPath"
 	transformerFragment "go-by-example/static-website-generator/generator/transformer-fragment"
 	"os"
 	"path/filepath"
@@ -95,16 +96,20 @@ func getAllSubDir(srcDir string) []string {
 	return subDirs
 }
 
-func RunGenerator(basePathname string) {
+func RunGenerator(basePathname, basePublicPath string) {
 	g := generator.NewGenerator(generator.Config{
 		ProcessableExtensions: []string{".html"},
 		OutputDir:             filepath.Join(basePathname, "./output"),
 		SrcDir:                filepath.Join(basePathname, "./html"),
 	})
 
+	basePublicPathTransformer := transformerbasepublicpath.NewTransformer(transformerbasepublicpath.Config{
+		BasePublicPath: basePublicPath,
+	})
+
 	fragmentTransformer := transformerFragment.NewTransformer(transformerFragment.Config{
 		FragmentSrcDir: filepath.Join(basePathname, "./fragments"),
-	})
+	}, g)
 
 	articleTransformer := transformerarticle.NewTransformer(
 		transformerarticle.GetDefaultConfig(),
@@ -113,6 +118,7 @@ func RunGenerator(basePathname string) {
 	)
 
 	// order matter
+	g.RegisterTransformer(basePublicPathTransformer)
 	g.RegisterTransformer(articleTransformer)
 	g.RegisterTransformer(fragmentTransformer)
 
@@ -121,6 +127,7 @@ func RunGenerator(basePathname string) {
 
 func main() {
 	basePathname := flag.String("basePathname", "./static-website-generator", "pathname to src files")
+	basePublicPath := flag.String("basePublicPath", "/", "base public path (eg: https://cethy.github.io/go-by-example/)")
 	flag.Parse()
 
 	watchFilePaths := append(
@@ -129,6 +136,6 @@ func main() {
 	)
 
 	watch(func() {
-		RunGenerator(*basePathname)
+		RunGenerator(*basePathname, *basePublicPath)
 	}, watchFilePaths...)
 }

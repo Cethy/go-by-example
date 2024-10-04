@@ -2,7 +2,7 @@
 Order: 1
 Title: HTTP Server
 Summary: Basic HTTP Server
-ImgSrc: /static/article2.jpg
+ImgSrc: static/article2.jpg
 ---
 
 # HTTP Server

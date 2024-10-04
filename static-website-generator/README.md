@@ -2,7 +2,7 @@
 Order: 999
 Title: Static Website Generator
 Summary: Opinionated Website Generator (powering this website)
-ImgSrc: /static/article3.jpg
+ImgSrc: static/article3.jpg
 ---
 
 # Static Website Generator

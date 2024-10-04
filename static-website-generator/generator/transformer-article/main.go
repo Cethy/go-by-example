@@ -19,16 +19,18 @@ import (
 )
 
 type Config struct {
-	fragmentArticleFilename  string
-	fragmentListItemFilename string
-	fragmentListItemId       string
+	fragmentArticleFilename    string
+	fragmentListItemFilename   string
+	fragmentListItemId         string
+	fragmentGithubLinkFilename string
 }
 
 func GetDefaultConfig() Config {
 	return Config{
-		fragmentArticleFilename:  "article",
-		fragmentListItemFilename: "article-list-item",
-		fragmentListItemId:       "{index-articles}",
+		fragmentArticleFilename:    "article",
+		fragmentListItemFilename:   "article-list-item",
+		fragmentListItemId:         "{index-articles}",
+		fragmentGithubLinkFilename: "article-github-link",
 	}
 }
 
@@ -45,11 +47,11 @@ type articleTransformer struct {
 }
 
 type Article struct {
-	Filename string
-	Title    string
-	ImgSrc   string
-	Order    int
-	Content  string
+	ProjectDirname string
+	Title          string
+	ImgSrc         string
+	Order          int
+	Content        string
 }
 
 type ArticleSlice []Article
@@ -99,11 +101,12 @@ func (p *articleTransformer) getArticlesData() ArticleSlice {
 			metaData := meta.Get(context)
 
 			articles = append(articles, Article{
-				Filename: "projects/" + dir.Name() + ".html",
-				Title:    metaData["Title"].(string),
-				ImgSrc:   metaData["ImgSrc"].(string),
-				Order:    metaData["Order"].(int),
-				Content:  buf.String(),
+				ProjectDirname: dir.Name(),
+				//ProjectDirname: "projects/" + dir.Name() + ".html",
+				Title:   metaData["Title"].(string),
+				ImgSrc:  metaData["ImgSrc"].(string),
+				Order:   metaData["Order"].(int),
+				Content: buf.String(),
 			})
 		}
 	}
@@ -113,10 +116,22 @@ func (p *articleTransformer) getArticlesData() ArticleSlice {
 	return articles
 }
 
+func (p *articleTransformer) getGithubLink(articleData Article) string {
+	fragment := p.fragmentTransformer.GetFragmentContent(p.Config.fragmentGithubLinkFilename)
+	fragment = strings.ReplaceAll(fragment, "{projectDir}", articleData.ProjectDirname)
+
+	return fragment
+}
+
+func (p *articleTransformer) getTargetArticleRelativePath(articleData Article) string {
+	// @todo add to config
+	return "projects/" + articleData.ProjectDirname + ".html"
+}
+
 func (p *articleTransformer) getIndexArticleListItem(articleData Article) string {
 	article := p.fragmentTransformer.GetFragmentContent(p.Config.fragmentListItemFilename)
 
-	article = strings.ReplaceAll(article, "{link}", articleData.Filename)
+	article = strings.ReplaceAll(article, "{link}", p.getTargetArticleRelativePath(articleData))
 	article = strings.ReplaceAll(article, "{title}", articleData.Title)
 	article = strings.ReplaceAll(article, "{imgSrc}", articleData.ImgSrc)
 
@@ -132,7 +147,9 @@ func (p *articleTransformer) getIndexArticleList() string {
 	return list
 }
 
-func (p *articleTransformer) buildArticleFile(relativeFilePath string, article Article) {
+func (p *articleTransformer) buildArticleFile(article Article) {
+	relativeFilePath := p.getTargetArticleRelativePath(article)
+
 	if slices.Contains(p.articleFilesBuilt, relativeFilePath) {
 		return
 	}
@@ -142,6 +159,7 @@ func (p *articleTransformer) buildArticleFile(relativeFilePath string, article A
 	articleRaw = strings.ReplaceAll(articleRaw, "{title}", article.Title)
 	articleRaw = strings.ReplaceAll(articleRaw, "{imgSrc}", article.ImgSrc)
 	articleRaw = strings.ReplaceAll(articleRaw, "{content}", article.Content)
+	articleRaw = strings.ReplaceAll(articleRaw, "{github-link}", p.getGithubLink(article))
 	fileContent, err := p.generator.InvokeTransformers(articleRaw)
 	if err != nil {
 		panic(err)
@@ -161,7 +179,7 @@ func (p *articleTransformer) Transform(fileContent string) (string, error) {
 
 	articles := p.getArticlesData()
 	for _, article := range articles {
-		p.buildArticleFile(article.Filename, article)
+		p.buildArticleFile(article)
 	}
 
 	p.pluginIsRunning = false

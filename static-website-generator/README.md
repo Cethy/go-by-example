@@ -1,5 +1,5 @@
 ---
-Order: 999
+Order: 9
 Title: Static Website Generator
 Summary: Opinionated Website Generator (powering this website)
 ImgSrc: static/article3.jpg

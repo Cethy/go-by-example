@@ -86,6 +86,16 @@ go run static-website-generator/generator.go
 go run static-website-generator/serve.go
 ```
 
+### bubbletea stuff
+
+```shell
+# go get github.com/charmbracelet/bubbletea
+# go get github.com/charmbracelet/bubbles/help
+# go get github.com/charmbracelet/bubbles/textinput
+
+go run cli-todolist/main.go
+```
+
 ## Sources
 
 - https://go.dev/tour/

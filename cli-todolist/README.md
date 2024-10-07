@@ -11,3 +11,5 @@ ImgSrc: static/article2.jpg
 
 Starting with the [shopping list tutorial by bubbletea](https://github.com/charmbracelet/bubbletea/tree/master/tutorials/basics),
 make a simple persisted todo list in the console.
+
+![Made with VHS](./demo.gif)

@@ -18,7 +18,7 @@ type Model struct {
 	keys              keyMap
 	addListItem       textinput.Model
 	AddListItemActive bool
-
+	previousCursor    int // which to-do list item our cursor is pointing at (before input is active)
 	//saveOnQuitCallback func(items []ListItem) error
 }
 
@@ -37,6 +37,7 @@ func New(listItems []data.ListItem /*, saveOnQuitCallback func(items []ListItem)
 	return Model{
 		ListItems:         listItems,
 		cursor:            0,
+		previousCursor:    0,
 		keys:              keys,
 		AddListItemActive: false,
 		addListItem:       NewTextInput(),
@@ -58,6 +59,7 @@ func (m Model) Update(originalMsg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.keys.Cancel):
 				m.addListItem.SetValue("")
 				m.AddListItemActive = false
+				m.cursor = m.previousCursor
 			}
 		}
 		m.addListItem, cmd = m.addListItem.Update(originalMsg)
@@ -78,6 +80,8 @@ func (m Model) Update(originalMsg tea.Msg) (Model, tea.Cmd) {
 			m.ListItems[m.cursor].Checked = !m.ListItems[m.cursor].Checked
 		case key.Matches(msg, m.keys.AddItem):
 			m.AddListItemActive = true
+
+			m.previousCursor = m.cursor
 			m.cursor = len(m.ListItems)
 		case key.Matches(msg, m.keys.RemoveItem):
 			if len(m.ListItems) <= 0 {

@@ -2,7 +2,8 @@
 Order: 11
 Title: Multi Todo List (CLI)
 Summary: Multi Todo List CLI program 
-ImgSrc: static/article3.jpg
+ImgSrc: static/article2.jpg
+Dependencies: ["./demo.gif"]
 ---
 
 # Multi todo list (CLI)

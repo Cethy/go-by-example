@@ -13,6 +13,7 @@ import (
 	transformerfragment "go-by-example/static-website-generator/generator/transformer-fragment"
 	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
@@ -52,6 +53,7 @@ type Article struct {
 	ImgSrc         string
 	Order          int
 	Content        string
+	Dependencies   []string
 }
 
 type ArticleSlice []Article
@@ -59,6 +61,8 @@ type ArticleSlice []Article
 func (s ArticleSlice) Len() int           { return len(s) }
 func (s ArticleSlice) Less(i, j int) bool { return s[i].Order < s[j].Order }
 func (s ArticleSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+var rootPath = path.Join("./")
 
 func (p *articleTransformer) getArticlesData() ArticleSlice {
 	var articles ArticleSlice
@@ -81,7 +85,6 @@ func (p *articleTransformer) getArticlesData() ArticleSlice {
 		),
 	)
 
-	rootPath := path.Join("./")
 	root, err := os.ReadDir(rootPath)
 	if err != nil {
 		panic(err)
@@ -100,13 +103,21 @@ func (p *articleTransformer) getArticlesData() ArticleSlice {
 			}
 			metaData := meta.Get(context)
 
+			var Dependencies []string
+			if metaData["Dependencies"] != nil {
+				for _, dep := range metaData["Dependencies"].([]interface{}) {
+					Dependencies = append(Dependencies, dep.(string)) //path.Join(rootPath, dir.Name(), dep.(string)))
+				}
+			}
+
 			articles = append(articles, Article{
 				ProjectDirname: dir.Name(),
 				//ProjectDirname: "projects/" + dir.Name() + ".html",
-				Title:   metaData["Title"].(string),
-				ImgSrc:  metaData["ImgSrc"].(string),
-				Order:   metaData["Order"].(int),
-				Content: buf.String(),
+				Title:        metaData["Title"].(string),
+				ImgSrc:       metaData["ImgSrc"].(string),
+				Order:        metaData["Order"].(int),
+				Content:      buf.String(),
+				Dependencies: Dependencies,
 			})
 		}
 	}
@@ -164,6 +175,16 @@ func (p *articleTransformer) buildArticleFile(article Article) {
 	if err != nil {
 		panic(err)
 	}*/
+
+	// copy & update dependencies
+	if len(article.Dependencies) > 0 {
+		for _, dep := range article.Dependencies {
+			relativeTargetPath := filepath.Join("projects/", article.ProjectDirname, dep)
+			p.generator.CopyFile(filepath.Join(rootPath, article.ProjectDirname, dep), relativeTargetPath)
+
+			articleRaw = strings.ReplaceAll(articleRaw, dep, filepath.Join(article.ProjectDirname, dep))
+		}
+	}
 
 	p.generator.BuildFile(relativeFilePath, articleRaw)
 	p.articleFilesBuilt = append(p.articleFilesBuilt, relativeFilePath)

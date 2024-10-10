@@ -24,6 +24,7 @@ type Generator interface {
 	RegisterTransformer(transformer Transformer)
 	InvokeTransformers(fileContent string) (string, error)
 	BuildFile(relativeFilePath, fileContent string)
+	CopyFile(srcPath, relativeTargetPath string)
 }
 
 type generator struct {
@@ -31,9 +32,8 @@ type generator struct {
 	transformers []Transformer
 }
 
-func (g *generator) copyFile(relativeFilePath string) {
-	srcPath := filepath.Join(g.Config.SrcDir, relativeFilePath)
-	targetPath := filepath.Join(g.Config.OutputDir, relativeFilePath)
+func (g *generator) CopyFile(srcPath, relativeTargetPath string) {
+	targetPath := filepath.Join(g.Config.OutputDir, relativeTargetPath)
 
 	// simply copy the file
 	r, err := os.Open(srcPath)
@@ -41,6 +41,11 @@ func (g *generator) copyFile(relativeFilePath string) {
 		panic(err)
 	}
 	defer r.Close()
+
+	err = os.MkdirAll(filepath.Dir(targetPath), 0755) // @todo check perms
+	if err != nil {
+		panic(err)
+	}
 
 	w, err := os.Create(targetPath)
 	if err != nil {
@@ -87,7 +92,9 @@ func (g *generator) InvokeTransformers(fileContent string) (string, error) {
 func (g *generator) processFile(relativeFilePath string) {
 	ext := filepath.Ext(relativeFilePath)
 	if !slices.Contains(g.Config.ProcessableExtensions, ext) {
-		g.copyFile(relativeFilePath)
+		srcPath := filepath.Join(g.Config.SrcDir, relativeFilePath)
+
+		g.CopyFile(srcPath, relativeFilePath)
 		return
 	}
 

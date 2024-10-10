@@ -2,7 +2,8 @@
 Order: 10
 Title: Todo List (CLI)
 Summary: Todo List CLI program 
-ImgSrc: static/article2.jpg
+ImgSrc: static/article1.jpg
+Dependencies: ["./demo.gif"]
 ---
 
 # Todo list (CLI)

@@ -176,7 +176,7 @@ func readData(sourcePath string) []todoItem {
 	pattern := "\\- \\[(?P<checked> ?x?)\\] (?P<value>[A-z].*)"
 	r, _ := regexp.Compile(pattern)
 	all := r.FindAllStringSubmatch(string(rawContent), -1)
-	choices := []todoItem{}
+	var choices []todoItem
 	for _, item := range all {
 		choices = append(choices, todoItem{
 			value:   item[r.SubexpIndex("value")],

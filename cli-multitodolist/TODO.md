@@ -2,7 +2,8 @@
 
 - [ ] add list
 - [ ] update list name
-- [ ] help block
+- [x] help block
+- [x] statusBar (notification holder)
 - [ ] correctly initialize app
 - [x] Showoff with VHS
 
@@ -11,15 +12,15 @@
 
 # list 1
 
-- [ ] 1 Foo
+- [x] 1 Foo
 - [x] 2 Bar
-- [ ] 3 Baz
+- [x] 3 Baz
 - [ ] 4 Foo
 - [x] 5 Bar
 - [ ] 6 Baz
-- [ ] 7 Foo
+- [x] 7 Foo
 - [x] 8 Bar
-- [ ] 9 Baz
+- [x] 9 Baz
 - [ ] 10 Foo
 - [x] 11 Bar
 - [ ] 12 Baz
@@ -56,6 +57,27 @@
 - [ ] Foo
 - [x] Bar
 - [ ] Baz
+- [x] Bar
+- [x] Bar
+- [ ] Baz
+- [ ] Foo
+- [x] Bar
+- [ ] Baz
+- [ ] Foo
+- [x] Bar
+- [ ] Baz
+- [ ] Foo
+- [x] Bar
+- [ ] Foo
+- [x] Bar
+- [x] Bar
+- [ ] Baz
+- [ ] Foo
+- [x] Bar
+- [ ] Baz
+- [ ] Foo
+- [x] Bar
+- [ ] Baz
 - [ ] Foo
 - [x] Bar
 - [ ] Baz
@@ -81,3 +103,4 @@
 - [ ] unnamed list's item
 - [x] Bar3
 - [ ] Baz3
+- [ ] edzdadaddz

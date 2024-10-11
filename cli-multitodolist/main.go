@@ -50,7 +50,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.help.ShowAll = !m.help.ShowAll
 				if m.help.ShowAll {
 					cmds = append(cmds, func() tea.Msg {
-						return statusBar.NewStatusMsg("Showing help")
+						return statusBar.NewStatusMsg("🐶 helping")
 					})
 				}
 
@@ -91,11 +91,16 @@ func (m model) View() string {
 		Align(lipgloss.Left, lipgloss.Top).
 		Render(m.header.View(m.width))
 
-	helpView := lipgloss.NewStyle().
-		Width(m.width).
-		Height(2).
-		Align(lipgloss.Left, lipgloss.Bottom).
-		Render(m.help.View(m.keys))
+	helpView := ""
+	if m.help.ShowAll {
+		helpKeys := append([][]key.Binding{m.keys.ShortHelp()}, m.header.Keys.Help()...)
+		helpKeys = append(helpKeys, m.getActiveTodolist().Keys.Help()...)
+		helpView = lipgloss.NewStyle().
+			Width(m.width).
+			Height(7).
+			Align(lipgloss.Left, lipgloss.Center).
+			Render("\n" + m.help.FullHelpView(helpKeys) + "\n")
+	}
 
 	// Status statusBar
 	statusBarUI := m.statusBar.View(m.width)
@@ -104,7 +109,7 @@ func (m model) View() string {
 
 	content := lipgloss.NewStyle().
 		Width(m.width).
-		Height(outsideContentHeight).
+		Height(m.height-outsideContentHeight).
 		Align(lipgloss.Left, lipgloss.Top).
 		Render(m.getActiveTodolist().View(m.width, m.height-outsideContentHeight))
 

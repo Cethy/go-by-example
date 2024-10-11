@@ -10,6 +10,11 @@ Enter
 
 Sleep 2250ms
 
+Sleep 1s
+Type "?"
+Sleep 7s
+Type "?"
+Sleep 500ms
 Right 1
 Sleep 1000ms
 Right 1
@@ -47,11 +52,9 @@ Sleep 1000ms
 Up 2
 Sleep 1500ms
 Type "x"
-Sleep 1s
-Type "?"
 
 # Admire the output for a bit.
 Sleep 3s
 Type "q"
 
-Sleep 2s
+Sleep 1s

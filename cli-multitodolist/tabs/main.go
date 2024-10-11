@@ -10,7 +10,7 @@ import (
 )
 
 type Model struct {
-	keys      KeyMap
+	Keys      KeyMap
 	Tabs      []string
 	ActiveTab int
 
@@ -19,7 +19,7 @@ type Model struct {
 
 func New(tabs []string) Model {
 	return Model{
-		keys:      Keys,
+		Keys:      Keys,
 		Tabs:      tabs,
 		ActiveTab: 0,
 	}
@@ -33,10 +33,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.Right):
+		case key.Matches(msg, m.Keys.Right):
 			m.ActiveTab = min(m.ActiveTab+1, len(m.Tabs)-1)
 			return m, nil
-		case key.Matches(msg, m.keys.Left):
+		case key.Matches(msg, m.Keys.Left):
 			m.ActiveTab = max(m.ActiveTab-1, 0)
 			return m, nil
 		}

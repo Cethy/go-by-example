@@ -16,7 +16,7 @@ import (
 type Model struct {
 	ListItems         []data.ListItem
 	cursor            int // which to-do list item our cursor is pointing at
-	keys              keyMap
+	Keys              KeyMap
 	addListItem       textinput.Model
 	AddListItemActive bool
 	previousCursor    int // which to-do list item our cursor is pointing at (before input is active)
@@ -24,7 +24,7 @@ type Model struct {
 
 func NewTextInput() textinput.Model {
 	ti := textinput.New()
-	ti.Placeholder = "list item"
+	ti.Placeholder = "type new entry"
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.Width = 20
@@ -38,7 +38,7 @@ func New(listItems []data.ListItem) Model {
 		ListItems:         listItems,
 		cursor:            0,
 		previousCursor:    0,
-		keys:              keys,
+		Keys:              keys,
 		AddListItemActive: false,
 		addListItem:       NewTextInput(),
 	}
@@ -52,19 +52,19 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
 			switch {
-			case key.Matches(msg, m.keys.Enter):
+			case key.Matches(msg, m.Keys.Enter):
 				m.ListItems = append(m.ListItems, data.ListItem{Value: m.addListItem.Value(), Checked: false})
 				m.addListItem.SetValue("")
 				m.AddListItemActive = false
 				m.cursor = len(m.ListItems) - 1
 
-				cmds = append(cmds, statusBar.NewStatusCmd("Item added"))
-			case key.Matches(msg, m.keys.Cancel):
+				cmds = append(cmds, statusBar.NewStatusCmd("New entry added"))
+			case key.Matches(msg, m.Keys.Cancel):
 				m.addListItem.SetValue("")
 				m.AddListItemActive = false
 				m.cursor = m.previousCursor
 
-				cmds = append(cmds, statusBar.NewStatusCmd("Adding item cancelled"))
+				cmds = append(cmds, statusBar.NewStatusCmd("New entry cancelled"))
 			}
 		}
 		m.addListItem, cmd = m.addListItem.Update(msg)
@@ -76,26 +76,26 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.Up):
+		case key.Matches(msg, m.Keys.Up):
 			if m.cursor > 0 {
 				m.cursor--
 			}
-		case key.Matches(msg, m.keys.Down):
+		case key.Matches(msg, m.Keys.Down):
 			if m.cursor < len(m.ListItems)-1 {
 				m.cursor++
 			}
-		case key.Matches(msg, m.keys.Check):
+		case key.Matches(msg, m.Keys.Check):
 			m.ListItems[m.cursor].Checked = !m.ListItems[m.cursor].Checked
 
-			cmds = append(cmds, statusBar.NewStatusCmd("Item checked"))
-		case key.Matches(msg, m.keys.AddItem):
+			cmds = append(cmds, statusBar.NewStatusCmd("Entry checked"))
+		case key.Matches(msg, m.Keys.AddItem):
 			m.AddListItemActive = true
 
 			m.previousCursor = m.cursor
 			m.cursor = len(m.ListItems)
 
-			cmds = append(cmds, statusBar.NewPersistingStatusCmd("Adding item"))
-		case key.Matches(msg, m.keys.RemoveItem):
+			cmds = append(cmds, statusBar.NewPersistingStatusCmd("Entry Adding"))
+		case key.Matches(msg, m.Keys.RemoveItem):
 			if len(m.ListItems) <= 0 {
 				break
 			}
@@ -104,7 +104,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.cursor = len(m.ListItems) - 1
 			}
 
-			cmds = append(cmds, statusBar.NewStatusCmd("Item removed"))
+			cmds = append(cmds, statusBar.NewStatusCmd("Entry removed"))
 		}
 	}
 

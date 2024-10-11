@@ -4,6 +4,8 @@
 - [ ] update list name
 - [ ] help block
 - [ ] status block (notification holder)
+- [ ] correctly initialize app
+
 
 ---
 

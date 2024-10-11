@@ -9,6 +9,7 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/reflow/wrap"
 	"go-by-example/cli-multitodolist/data"
+	"go-by-example/cli-multitodolist/statusBar"
 	"strings"
 )
 
@@ -19,7 +20,6 @@ type Model struct {
 	addListItem       textinput.Model
 	AddListItemActive bool
 	previousCursor    int // which to-do list item our cursor is pointing at (before input is active)
-	//saveOnQuitCallback func(items []ListItem) error
 }
 
 func NewTextInput() textinput.Model {
@@ -33,7 +33,7 @@ func NewTextInput() textinput.Model {
 	return ti
 }
 
-func New(listItems []data.ListItem /*, saveOnQuitCallback func(items []ListItem) error*/) Model {
+func New(listItems []data.ListItem) Model {
 	return Model{
 		ListItems:         listItems,
 		cursor:            0,
@@ -41,14 +41,15 @@ func New(listItems []data.ListItem /*, saveOnQuitCallback func(items []ListItem)
 		keys:              keys,
 		AddListItemActive: false,
 		addListItem:       NewTextInput(),
-		//saveOnQuitCallback: saveOnQuitCallback,
 	}
 }
 
-func (m Model) Update(originalMsg tea.Msg) (Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	if m.AddListItemActive {
 		var cmd tea.Cmd
-		switch msg := originalMsg.(type) {
+		switch msg := msg.(type) {
 		case tea.KeyMsg:
 			switch {
 			case key.Matches(msg, m.keys.Enter):
@@ -56,16 +57,23 @@ func (m Model) Update(originalMsg tea.Msg) (Model, tea.Cmd) {
 				m.addListItem.SetValue("")
 				m.AddListItemActive = false
 				m.cursor = len(m.ListItems) - 1
+
+				cmds = append(cmds, statusBar.NewStatusCmd("Item added"))
 			case key.Matches(msg, m.keys.Cancel):
 				m.addListItem.SetValue("")
 				m.AddListItemActive = false
 				m.cursor = m.previousCursor
+
+				cmds = append(cmds, statusBar.NewStatusCmd("Adding item cancelled"))
 			}
 		}
-		m.addListItem, cmd = m.addListItem.Update(originalMsg)
-		return m, cmd
+		m.addListItem, cmd = m.addListItem.Update(msg)
+		cmds = append(cmds, cmd)
+
+		return m, tea.Batch(cmds...)
 	}
-	switch msg := originalMsg.(type) {
+
+	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.Up):
@@ -78,11 +86,15 @@ func (m Model) Update(originalMsg tea.Msg) (Model, tea.Cmd) {
 			}
 		case key.Matches(msg, m.keys.Check):
 			m.ListItems[m.cursor].Checked = !m.ListItems[m.cursor].Checked
+
+			cmds = append(cmds, statusBar.NewStatusCmd("Item checked"))
 		case key.Matches(msg, m.keys.AddItem):
 			m.AddListItemActive = true
 
 			m.previousCursor = m.cursor
 			m.cursor = len(m.ListItems)
+
+			cmds = append(cmds, statusBar.NewPersistingStatusCmd("Adding item"))
 		case key.Matches(msg, m.keys.RemoveItem):
 			if len(m.ListItems) <= 0 {
 				break
@@ -91,10 +103,12 @@ func (m Model) Update(originalMsg tea.Msg) (Model, tea.Cmd) {
 			if m.cursor >= len(m.ListItems)-1 {
 				m.cursor = len(m.ListItems) - 1
 			}
+
+			cmds = append(cmds, statusBar.NewStatusCmd("Item removed"))
 		}
 	}
 
-	return m, nil
+	return m, tea.Batch(cmds...)
 }
 
 func listItemView(listItem data.ListItem, withCursor bool) string {

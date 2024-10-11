@@ -14,10 +14,6 @@ import (
 	"os"
 )
 
-type State struct {
-	status string
-}
-
 type model struct {
 	header    tabs.Model
 	todolists []todolist.Model
@@ -25,14 +21,12 @@ type model struct {
 	help      help.Model
 	statusBar statusBar.Model
 
-	state State
-
 	width, height      int
 	saveOnQuitCallback func(lists []data.NamedList) error
 }
 
 func (m model) Init() tea.Cmd {
-	return nil
+	return statusBar.NewStatusCmd(m.statusBar.DefaultValue)
 }
 
 func (m model) getActiveTodolist() todolist.Model {
@@ -42,8 +36,6 @@ func (m model) getActiveTodolist() todolist.Model {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
-
-	m.state.status = "What's on your mind today ?"
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -57,7 +49,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// toggle help view
 				m.help.ShowAll = !m.help.ShowAll
 				if m.help.ShowAll {
-					m.state.status = "Showing help"
+					cmds = append(cmds, func() tea.Msg {
+						return statusBar.NewStatusMsg("Showing help")
+					})
 				}
 
 			case key.Matches(msg, m.keys.Quit):
@@ -82,6 +76,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.header, cmd = m.header.Update(msg)
 		cmds = append(cmds, cmd)
 	}
+	m.statusBar, cmd = m.statusBar.Update(msg)
+	cmds = append(cmds, cmd)
 	m.todolists[m.header.ActiveTab], cmd = m.getActiveTodolist().Update(msg)
 	cmds = append(cmds, cmd)
 
@@ -102,7 +98,7 @@ func (m model) View() string {
 		Render(m.help.View(m.keys))
 
 	// Status statusBar
-	statusBarUI := m.statusBar.View(m.state.status, m.width)
+	statusBarUI := m.statusBar.View(m.width)
 
 	outsideContentHeight := lipgloss.Height(header) + lipgloss.Height(helpView) + lipgloss.Height(statusBarUI)
 
@@ -127,11 +123,6 @@ func getLabels(tabs []data.NamedList) []string {
 	return tabLabels
 }
 
-// @todo
-// - persist data
-// - "add new list" ui
-// - update help based on ui
-// - edit features
 func main() {
 	dbFilepath := "./cli-multitodolist/TODO.md"
 	namedLists := data.ReadData(dbFilepath)
@@ -159,7 +150,6 @@ func main() {
 		saveOnQuitCallback: func(lists []data.NamedList) error {
 			return data.WriteData(lists, dbFilepath)
 		},
-		state: State{},
 	})
 
 	if _, err := p.Run(); err != nil {

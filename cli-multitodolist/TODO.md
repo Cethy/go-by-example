@@ -3,17 +3,17 @@
 - [ ] add list
 - [ ] update list name
 - [ ] help block
-- [ ] status block (notification holder)
 - [ ] correctly initialize app
+- [x] Showoff with VHS
 
 
 ---
 
 # list 1
 
-- [x] 1 Foo
+- [ ] 1 Foo
 - [x] 2 Bar
-- [x] 3 Baz
+- [ ] 3 Baz
 - [ ] 4 Foo
 - [x] 5 Bar
 - [ ] 6 Baz

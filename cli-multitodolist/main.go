@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"go-by-example/cli-multitodolist/data"
+	"go-by-example/cli-multitodolist/help"
 	"go-by-example/cli-multitodolist/keys"
 	"go-by-example/cli-multitodolist/statusBar"
 	"go-by-example/cli-multitodolist/tabs"
@@ -91,21 +91,13 @@ func (m model) View() string {
 		Align(lipgloss.Left, lipgloss.Top).
 		Render(m.header.View(m.width))
 
-	helpView := ""
-	if m.help.ShowAll {
-		helpKeys := append([][]key.Binding{m.keys.ShortHelp()}, m.header.Keys.Help()...)
-		helpKeys = append(helpKeys, m.getActiveTodolist().Keys.Help()...)
-		helpView = lipgloss.NewStyle().
-			Width(m.width).
-			Height(7).
-			Align(lipgloss.Left, lipgloss.Center).
-			Render("\n" + m.help.FullHelpView(helpKeys) + "\n")
-	}
+	helpKeys := append([][]key.Binding{m.keys.ShortHelp()}, m.header.Keys.Help()...)
+	helpKeys = append(helpKeys, m.getActiveTodolist().Keys.Help()...)
+	helpView := m.help.View(helpKeys)
 
-	// Status statusBar
-	statusBarUI := m.statusBar.View(m.width)
+	statusBarView := m.statusBar.View(m.width)
 
-	outsideContentHeight := lipgloss.Height(header) + lipgloss.Height(helpView) + lipgloss.Height(statusBarUI)
+	outsideContentHeight := lipgloss.Height(header) + lipgloss.Height(helpView) + lipgloss.Height(statusBarView)
 
 	content := lipgloss.NewStyle().
 		Width(m.width).
@@ -113,7 +105,7 @@ func (m model) View() string {
 		Align(lipgloss.Left, lipgloss.Top).
 		Render(m.getActiveTodolist().View(m.width, m.height-outsideContentHeight))
 
-	return lipgloss.JoinVertical(lipgloss.Top, header, content, helpView, statusBarUI)
+	return lipgloss.JoinVertical(lipgloss.Top, header, content, helpView, statusBarView)
 }
 
 func getLabels(tabs []data.NamedList) []string {
@@ -146,9 +138,11 @@ func main() {
 		defer f.Close()
 	}
 
+	helpModel := help.New()
+
 	p := tea.NewProgram(model{
 		header:    tabs.New(getLabels(namedLists)),
-		help:      help.New(),
+		help:      helpModel,
 		keys:      keys.Keys,
 		statusBar: statusBar.New(),
 		todolists: todolists,

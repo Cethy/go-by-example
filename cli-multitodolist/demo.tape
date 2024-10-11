@@ -12,7 +12,7 @@ Sleep 2250ms
 
 Sleep 1s
 Type "?"
-Sleep 7s
+Sleep 8s
 Type "?"
 Sleep 500ms
 Right 1

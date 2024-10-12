@@ -2,7 +2,6 @@ package tabs
 
 import (
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/viewport"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -13,8 +12,6 @@ type Model struct {
 	Keys      KeyMap
 	Tabs      []string
 	ActiveTab int
-
-	viewport viewport.Model
 }
 
 func New(tabs []string) Model {

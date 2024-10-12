@@ -5,27 +5,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type StatusMsg struct {
-	value   string
-	persist bool
-}
-type DisablePersistMsg struct{}
-
-func NewStatusMsg(value string) StatusMsg {
-	return StatusMsg{value: value}
-}
-
-func NewStatusCmd(value string) tea.Cmd {
-	return func() tea.Msg {
-		return StatusMsg{value: value, persist: false}
-	}
-}
-func NewPersistingStatusCmd(value string) tea.Cmd {
-	return func() tea.Msg {
-		return StatusMsg{value: value, persist: true}
-	}
-}
-
 type Model struct {
 	value        string
 	DefaultValue string

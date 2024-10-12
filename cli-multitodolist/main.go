@@ -7,19 +7,24 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"go-by-example/cli-multitodolist/data"
 	"go-by-example/cli-multitodolist/help"
+	"go-by-example/cli-multitodolist/input"
 	"go-by-example/cli-multitodolist/keys"
 	"go-by-example/cli-multitodolist/statusBar"
 	"go-by-example/cli-multitodolist/tabs"
 	"go-by-example/cli-multitodolist/todolist"
+	"go-by-example/cli-multitodolist/viewport"
+	"log"
 	"os"
 )
 
 type model struct {
-	header    tabs.Model
-	todolists []todolist.Model
-	keys      keys.KeyMap
-	help      help.Model
-	statusBar statusBar.Model
+	header       tabs.Model
+	todolists    []todolist.Model
+	keys         keys.KeyMap
+	help         help.Model
+	statusBar    statusBar.Model
+	viewport     viewport.Model
+	addItemInput input.Model
 
 	width, height      int
 	saveOnQuitCallback func(lists []data.NamedList) error
@@ -37,13 +42,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
+	log.Printf("(%T) %s\n", msg, msg)
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-
 	case tea.KeyMsg:
-		if !m.getActiveTodolist().AddListItemActive {
+		if !m.addItemInput.Active {
 			switch {
 			case key.Matches(msg, m.keys.Help):
 				// toggle help view
@@ -72,38 +78,51 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	if !m.getActiveTodolist().AddListItemActive {
+	if !m.addItemInput.Active {
 		m.header, cmd = m.header.Update(msg)
+		cmds = append(cmds, cmd)
+		m.todolists[m.header.ActiveTab], cmd = m.getActiveTodolist().Update(msg)
 		cmds = append(cmds, cmd)
 	}
 	m.statusBar, cmd = m.statusBar.Update(msg)
 	cmds = append(cmds, cmd)
-	m.todolists[m.header.ActiveTab], cmd = m.getActiveTodolist().Update(msg)
+	m.addItemInput, cmd = m.addItemInput.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }
 
-func (m model) View() string {
-	header := lipgloss.NewStyle().
+func (m model) viewHeader() string {
+	return lipgloss.NewStyle().
 		Width(m.width).
 		Height(4).
 		Align(lipgloss.Left, lipgloss.Top).
 		Render(m.header.View(m.width))
+}
 
+func (m model) viewHelp() string {
 	helpKeys := append([][]key.Binding{m.keys.ShortHelp()}, m.header.Keys.Help()...)
 	helpKeys = append(helpKeys, m.getActiveTodolist().Keys.Help()...)
-	helpView := m.help.View(helpKeys)
+	return m.help.View(helpKeys)
+}
 
-	statusBarView := m.statusBar.View(m.width)
+func (m model) viewStatusBar() string {
+	return m.statusBar.View(m.width)
+}
+
+func (m model) View() string {
+	header := m.viewHeader()
+	helpView := m.viewHelp()
+	statusBarView := m.viewStatusBar()
 
 	outsideContentHeight := lipgloss.Height(header) + lipgloss.Height(helpView) + lipgloss.Height(statusBarView)
 
-	content := lipgloss.NewStyle().
-		Width(m.width).
-		Height(m.height-outsideContentHeight).
-		Align(lipgloss.Left, lipgloss.Top).
-		Render(m.getActiveTodolist().View(m.width, m.height-outsideContentHeight))
+	activeTodoList := m.getActiveTodolist()
+	addItemInputView := ""
+	if m.addItemInput.Active {
+		addItemInputView = m.addItemInput.View()
+	}
+	content := m.viewport.View(activeTodoList.View()+addItemInputView, m.width, m.height-outsideContentHeight, activeTodoList.Cursor)
 
 	return lipgloss.JoinVertical(lipgloss.Top, header, content, helpView, statusBarView)
 }
@@ -146,6 +165,12 @@ func main() {
 		keys:      keys.Keys,
 		statusBar: statusBar.New(),
 		todolists: todolists,
+		viewport:  viewport.New(),
+		addItemInput: input.New(
+			"addItemInput",
+			todolist.NewNewEntryCmd,
+			todolist.NewCancelNewEntryCmd,
+		),
 		saveOnQuitCallback: func(lists []data.NamedList) error {
 			return data.WriteData(lists, dbFilepath)
 		},

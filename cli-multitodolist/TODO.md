@@ -1,11 +1,11 @@
 # TODO
 
-- [ ] add list
+- [x] add list
+- [x] delete list
 - [ ] update list name
 - [x] help block
 - [x] statusBar (notification holder)
 - [ ] correctly initialize app
-- [x] Showoff with VHS
 
 
 ---
@@ -18,9 +18,9 @@
 - [ ] 4 Foo
 - [x] 5 Bar
 - [ ] 6 Baz
-- [x] 7 Foo
+- [ ] 7 Foo
 - [x] 8 Bar
-- [x] 9 Baz
+- [ ] 9 Baz
 - [ ] 10 Foo
 - [x] 11 Bar
 - [ ] 12 Baz
@@ -90,7 +90,6 @@
 # list 2
 
 - [ ] Foo2
-- [x] Bar2
 - [ ] Baz fezfejrglekrngoerjbgzùibgze fzegerger gfze fezkfnerùkkngùerijgzefze ferogejtmlbjetr`gnzef zef zefmlejr`ôrtjh`mlrjtgùkzenfze fze fzegjert`lbjlmnjyùkner gz fzefgjerbmlrjmkltùjnmlrt`,bmrtd g ezf
 - [ ] Bazfezfejrglekrngoerjbgzùibgzefzegergergfzefezkfnerùkkngùerijgzefzeferogejtmlbjetrazfezfejrglekrngoerjbgzùibgzefzegergergfzefezkfnerùkkngùerijgzefzeferogejtmlbjetr
 - [ ] Baz2
@@ -103,4 +102,10 @@
 - [ ] unnamed list's item
 - [x] Bar3
 - [ ] Baz3
-- [ ] edzdadaddz
+
+
+---
+
+# new todolist
+
+- [x] Showoff with VHS

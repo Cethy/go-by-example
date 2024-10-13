@@ -55,12 +55,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 			cmds = append(cmds, statusBar.NewStatusCmd("Entry checked"))
 		case key.Matches(msg, m.Keys.AddItem):
-			cmds = append(cmds, input.NewFocusInputCmd("addItemInput"))
+			cmds = append(cmds, input.NewFocusInputCmd("addEntryInput"))
 
 			m.previousCursor = m.Cursor
 			m.Cursor = len(m.ListItems)
 
-			cmds = append(cmds, statusBar.NewPersistingStatusCmd("Entry Adding"))
+			cmds = append(cmds, statusBar.NewPersistingStatusCmd("Typing new entry"))
 		case key.Matches(msg, m.Keys.RemoveItem):
 			if len(m.ListItems) <= 0 {
 				break

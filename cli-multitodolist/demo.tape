@@ -3,7 +3,8 @@
 # Where should we write the GIF?
 Output demo.gif
 
-Set Height 800
+Set Width 1600
+Set Height 1200
 
 Type "go run cli-multitodolist/main.go"
 Enter
@@ -40,6 +41,18 @@ Sleep 500ms
 Space 1
 Sleep 500ms
 Left 1
+Right 2
+Sleep 500ms
+Down 1
+Sleep 1500ms
+Type "x"
+Up 1
+Sleep 500ms
+Type "z"
+Sleep 1000ms
+Type "new todolist"
+Sleep 500ms
+Enter
 Sleep 500ms
 Type "a"
 Sleep 500ms
@@ -49,10 +62,6 @@ Enter
 Sleep 1000ms
 Space
 Sleep 1000ms
-Up 2
-Sleep 1500ms
-Type "x"
-
 # Admire the output for a bit.
 Sleep 3s
 Type "q"

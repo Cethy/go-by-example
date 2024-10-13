@@ -2,6 +2,8 @@ package tabs
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"go-by-example/cli-multitodolist/input"
+	"go-by-example/cli-multitodolist/statusBar"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -9,16 +11,16 @@ import (
 )
 
 type Model struct {
-	Keys      KeyMap
-	Tabs      []string
-	ActiveTab int
+	Keys         KeyMap
+	Tabs         []string
+	ActiveTab    int
+	focusConfirm bool
 }
 
 func New(tabs []string) Model {
 	return Model{
-		Keys:      Keys,
-		Tabs:      tabs,
-		ActiveTab: 0,
+		Keys: keys,
+		Tabs: tabs,
 	}
 }
 
@@ -27,22 +29,47 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
+	case CreateEntryMsg:
+		m.Tabs = append(m.Tabs, msg.Value)
+		m.ActiveTab = len(m.Tabs) - 1
+	case RemoveEntryMsg:
+		cmds = append(cmds, statusBar.NewStatusCmd("Confirm deleting this list ? Y/n"))
+		m.focusConfirm = true
+	case ConfirmRemoveEntryMsg:
+		m.Tabs = append(m.Tabs[:msg.Index], m.Tabs[msg.Index+1:]...)
+		if m.ActiveTab >= len(m.Tabs) {
+			m.ActiveTab = len(m.Tabs) - 1
+		}
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.Keys.Right):
-			m.ActiveTab = min(m.ActiveTab+1, len(m.Tabs)-1)
-			return m, nil
-		case key.Matches(msg, m.Keys.Left):
-			m.ActiveTab = max(m.ActiveTab-1, 0)
-			return m, nil
+		if m.focusConfirm {
+			if msg.String() == "y" || msg.String() == "Y" {
+				cmds = append(cmds, NewConfirmRemoveEntryCmd(m.ActiveTab))
+			}
+			m.focusConfirm = false
+		} else {
+			switch {
+			case key.Matches(msg, m.Keys.Right):
+				m.ActiveTab = min(m.ActiveTab+1, len(m.Tabs)-1)
+				return m, nil
+			case key.Matches(msg, m.Keys.Left):
+				m.ActiveTab = max(m.ActiveTab-1, 0)
+				return m, nil
+			case key.Matches(msg, m.Keys.AddItem):
+				cmds = append(cmds, input.NewFocusInputCmd("addListInput"))
+				cmds = append(cmds, statusBar.NewPersistingStatusCmd("Typing new list entry"))
+			case key.Matches(msg, m.Keys.RemoveItem):
+				cmds = append(cmds, NewRemoveEntryCmd(m.ActiveTab))
+			}
 		}
 	}
 
-	return m, nil
+	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View(width int) string {
+func (m Model) View(extraTabs []string, width int) string {
 	var tabs []string
 	for i, t := range m.Tabs {
 		if m.ActiveTab == i {
@@ -50,6 +77,9 @@ func (m Model) View(width int) string {
 		} else {
 			tabs = append(tabs, tab.Render(t))
 		}
+	}
+	for _, t := range extraTabs {
+		tabs = append(tabs, tab.Render(t))
 	}
 
 	header := lipgloss.JoinHorizontal(

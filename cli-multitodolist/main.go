@@ -13,18 +13,20 @@ import (
 	"go-by-example/cli-multitodolist/tabs"
 	"go-by-example/cli-multitodolist/todolist"
 	"go-by-example/cli-multitodolist/viewport"
+	"io"
 	"log"
 	"os"
 )
 
 type model struct {
-	header       tabs.Model
-	todolists    []todolist.Model
-	keys         keys.KeyMap
-	help         help.Model
-	statusBar    statusBar.Model
-	viewport     viewport.Model
-	addItemInput input.Model
+	header        tabs.Model
+	todolists     []todolist.Model
+	keys          keys.KeyMap
+	help          help.Model
+	statusBar     statusBar.Model
+	viewport      viewport.Model
+	addEntryInput input.Model
+	addListInput  input.Model
 
 	width, height      int
 	saveOnQuitCallback func(lists []data.NamedList) error
@@ -38,6 +40,10 @@ func (m model) getActiveTodolist() todolist.Model {
 	return m.todolists[m.header.ActiveTab]
 }
 
+func (m model) isAnyInputActive() bool {
+	return m.addEntryInput.Active || m.addListInput.Active
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
@@ -48,8 +54,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+	case tabs.CreateEntryMsg:
+		m.todolists = append(m.todolists, todolist.New([]data.ListItem{}))
+		cmds = append(cmds, statusBar.NewStatusCmd("New list created"))
+	case tabs.CancelCreateEntryMsg:
+		cmds = append(cmds, statusBar.NewStatusCmd("New list cancelled"))
+	case tabs.ConfirmRemoveEntryMsg:
+		m.todolists = append(m.todolists[:msg.Index], m.todolists[msg.Index+1:]...)
+		cmds = append(cmds, statusBar.NewStatusCmd("list deleted"))
 	case tea.KeyMsg:
-		if !m.addItemInput.Active {
+		if !m.isAnyInputActive() {
 			switch {
 			case key.Matches(msg, m.keys.Help):
 				// toggle help view
@@ -78,7 +92,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	if !m.addItemInput.Active {
+	if !m.isAnyInputActive() {
 		m.header, cmd = m.header.Update(msg)
 		cmds = append(cmds, cmd)
 		m.todolists[m.header.ActiveTab], cmd = m.getActiveTodolist().Update(msg)
@@ -86,18 +100,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	m.statusBar, cmd = m.statusBar.Update(msg)
 	cmds = append(cmds, cmd)
-	m.addItemInput, cmd = m.addItemInput.Update(msg)
+	m.addEntryInput, cmd = m.addEntryInput.Update(msg)
+	cmds = append(cmds, cmd)
+	m.addListInput, cmd = m.addListInput.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }
 
 func (m model) viewHeader() string {
+	newTabView := "+"
+	if m.addListInput.Active {
+		newTabView = m.addListInput.View()
+	}
+
 	return lipgloss.NewStyle().
 		Width(m.width).
 		Height(4).
 		Align(lipgloss.Left, lipgloss.Top).
-		Render(m.header.View(m.width))
+		Render(m.header.View([]string{newTabView}, m.width))
 }
 
 func (m model) viewHelp() string {
@@ -119,8 +140,8 @@ func (m model) View() string {
 
 	activeTodoList := m.getActiveTodolist()
 	addItemInputView := ""
-	if m.addItemInput.Active {
-		addItemInputView = m.addItemInput.View()
+	if m.addEntryInput.Active {
+		addItemInputView = m.addEntryInput.View()
 	}
 	content := m.viewport.View(activeTodoList.View()+addItemInputView, m.width, m.height-outsideContentHeight, activeTodoList.Cursor)
 
@@ -155,6 +176,8 @@ func main() {
 			os.Exit(1)
 		}
 		defer f.Close()
+	} else {
+		log.SetOutput(io.Discard)
 	}
 
 	helpModel := help.New()
@@ -166,10 +189,17 @@ func main() {
 		statusBar: statusBar.New(),
 		todolists: todolists,
 		viewport:  viewport.New(),
-		addItemInput: input.New(
-			"addItemInput",
+		addEntryInput: input.New(
+			"addEntryInput",
 			todolist.NewNewEntryCmd,
 			todolist.NewCancelNewEntryCmd,
+			input.NewInput("new entry", "  [ ] "),
+		),
+		addListInput: input.New(
+			"addListInput",
+			tabs.NewCreateEntryCmd,
+			tabs.NewCancelCreateEntryCmd,
+			input.NewInput("new list", ""),
 		),
 		saveOnQuitCallback: func(lists []data.NamedList) error {
 			return data.WriteData(lists, dbFilepath)

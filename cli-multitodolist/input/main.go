@@ -16,21 +16,21 @@ type Model struct {
 	id string
 }
 
-func NewInput() textinput.Model {
+func NewInput(Placeholder, Prompt string) textinput.Model {
 	ti := textinput.New()
-	ti.Placeholder = "new entry"
+	ti.Placeholder = Placeholder
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.Width = 20
-	ti.Prompt = "  [ ] "
+	ti.Prompt = Prompt
 
 	return ti
 }
 
-func New(id string, getConfirmInputCmd func(value string) tea.Cmd, getCancelInputCmd func() tea.Cmd) Model {
+func New(id string, getConfirmInputCmd func(value string) tea.Cmd, getCancelInputCmd func() tea.Cmd, input textinput.Model) Model {
 	return Model{
 		Keys:               keys,
-		input:              NewInput(),
+		input:              input,
 		Active:             false,
 		getConfirmInputCmd: getConfirmInputCmd,
 		getCancelInputCmd:  getCancelInputCmd,

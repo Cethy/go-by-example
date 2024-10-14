@@ -13,14 +13,16 @@ import (
 type Model struct {
 	Keys         KeyMap
 	Tabs         []string
+	EditTab      int
 	ActiveTab    int
 	focusConfirm bool
 }
 
 func New(tabs []string) Model {
 	return Model{
-		Keys: keys,
-		Tabs: tabs,
+		Keys:    keys,
+		Tabs:    tabs,
+		EditTab: -1,
 	}
 }
 
@@ -35,6 +37,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case CreateEntryMsg:
 		m.Tabs = append(m.Tabs, msg.Value)
 		m.ActiveTab = len(m.Tabs) - 1
+	case UpdateEntryMsg:
+		m.Tabs[m.ActiveTab] = msg.Value
+		m.EditTab = -1
+	case CancelUpdateEntryMsg:
+		m.EditTab = -1
 	case RemoveEntryMsg:
 		cmds = append(cmds, statusBar.NewStatusCmd("Confirm deleting this list ? Y/n"))
 		m.focusConfirm = true
@@ -43,6 +50,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if m.ActiveTab >= len(m.Tabs) {
 			m.ActiveTab = len(m.Tabs) - 1
 		}
+
 	case tea.KeyMsg:
 		if m.focusConfirm {
 			if msg.String() == "y" || msg.String() == "Y" {
@@ -59,7 +67,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return m, nil
 			case key.Matches(msg, m.Keys.AddItem):
 				cmds = append(cmds, input.NewFocusInputCmd("addListInput"))
-				cmds = append(cmds, statusBar.NewPersistingStatusCmd("Typing new list entry"))
+				cmds = append(cmds, statusBar.NewPersistingStatusCmd("Creating new list"))
+			case key.Matches(msg, m.Keys.EditItem):
+				m.EditTab = m.ActiveTab
+				cmds = append(cmds, input.NewFocusInputValueCmd("editListInput", m.Tabs[m.ActiveTab]))
+				cmds = append(cmds, statusBar.NewPersistingStatusCmd("Editing list title"))
 			case key.Matches(msg, m.Keys.RemoveItem):
 				cmds = append(cmds, NewRemoveEntryCmd(m.ActiveTab))
 			}
@@ -69,9 +81,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View(extraTabs []string, width int) string {
+func (m Model) View(extraTabs []string, editTabRender func(t string) string, width int) string {
 	var tabs []string
 	for i, t := range m.Tabs {
+		if m.EditTab == i {
+			tabs = append(tabs, activeTab.Render(editTabRender(t)))
+			continue
+		}
+
+		if t == "" {
+			t = "[unnamed list]"
+		}
 		if m.ActiveTab == i {
 			tabs = append(tabs, activeTab.Render(t))
 		} else {

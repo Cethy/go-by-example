@@ -2,20 +2,38 @@ package todolist
 
 import tea "github.com/charmbracelet/bubbletea"
 
-type NewEntryMsg struct {
+type CreateEntryMsg struct {
 	Value string
 }
 
-func NewNewEntryCmd(value string) tea.Cmd {
+func NewCreateEntryCmd(value string) tea.Cmd {
 	return func() tea.Msg {
-		return NewEntryMsg{Value: value}
+		return CreateEntryMsg{Value: value}
 	}
 }
 
-type CancelNewEntryMsg struct{}
+type CancelCreateEntryMsg struct{}
 
-func NewCancelNewEntryCmd() tea.Cmd {
+func NewCancelCreateEntryCmd() tea.Cmd {
 	return func() tea.Msg {
-		return CancelNewEntryMsg{}
+		return CancelCreateEntryMsg{}
+	}
+}
+
+type UpdateEntryMsg struct {
+	Value string
+}
+
+func NewUpdateEntryCmd(value string) tea.Cmd {
+	return func() tea.Msg {
+		return UpdateEntryMsg{Value: value}
+	}
+}
+
+type CancelUpdateEntryMsg struct{}
+
+func NewCancelUpdateEntryCmd() tea.Cmd {
+	return func() tea.Msg {
+		return CancelUpdateEntryMsg{}
 	}
 }

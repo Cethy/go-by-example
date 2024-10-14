@@ -20,6 +20,24 @@ func NewCancelCreateEntryCmd() tea.Cmd {
 	}
 }
 
+type UpdateEntryMsg struct {
+	Value string
+}
+
+func NewUpdateEntryCmd(value string) tea.Cmd {
+	return func() tea.Msg {
+		return UpdateEntryMsg{Value: value}
+	}
+}
+
+type CancelUpdateEntryMsg struct{}
+
+func NewCancelUpdateEntryCmd() tea.Cmd {
+	return func() tea.Msg {
+		return CancelUpdateEntryMsg{}
+	}
+}
+
 type RemoveEntryMsg struct {
 	Index int
 }

@@ -50,6 +50,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case FocusInputMsg:
 		if m.id == msg.id {
 			m.Active = true
+			m.input.SetValue(msg.value)
 		}
 	case tea.KeyMsg:
 		if m.Active {

@@ -97,8 +97,6 @@
 
 ---
 
-# [unnamed list]
-
 - [ ] unnamed list's item
 - [x] Bar3
 - [ ] Baz3

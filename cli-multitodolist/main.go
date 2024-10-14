@@ -19,14 +19,16 @@ import (
 )
 
 type model struct {
-	header        tabs.Model
-	todolists     []todolist.Model
-	keys          keys.KeyMap
-	help          help.Model
-	statusBar     statusBar.Model
-	viewport      viewport.Model
-	addEntryInput input.Model
-	addListInput  input.Model
+	header         tabs.Model
+	todolists      []todolist.Model
+	keys           keys.KeyMap
+	help           help.Model
+	statusBar      statusBar.Model
+	viewport       viewport.Model
+	addEntryInput  input.Model
+	editEntryInput input.Model
+	addListInput   input.Model
+	editListInput  input.Model
 
 	width, height      int
 	saveOnQuitCallback func(lists []data.NamedList) error
@@ -41,7 +43,7 @@ func (m model) getActiveTodolist() todolist.Model {
 }
 
 func (m model) isAnyInputActive() bool {
-	return m.addEntryInput.Active || m.addListInput.Active
+	return m.addEntryInput.Active || m.editEntryInput.Active || m.addListInput.Active || m.editListInput.Active
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -102,7 +104,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 	m.addEntryInput, cmd = m.addEntryInput.Update(msg)
 	cmds = append(cmds, cmd)
+	m.editEntryInput, cmd = m.editEntryInput.Update(msg)
+	cmds = append(cmds, cmd)
 	m.addListInput, cmd = m.addListInput.Update(msg)
+	cmds = append(cmds, cmd)
+	m.editListInput, cmd = m.editListInput.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
@@ -118,7 +124,13 @@ func (m model) viewHeader() string {
 		Width(m.width).
 		Height(4).
 		Align(lipgloss.Left, lipgloss.Top).
-		Render(m.header.View([]string{newTabView}, m.width))
+		Render(m.header.View(
+			[]string{newTabView},
+			func(t string) string {
+				return m.editListInput.View()
+			},
+			m.width,
+		))
 }
 
 func (m model) viewHelp() string {
@@ -143,7 +155,9 @@ func (m model) View() string {
 	if m.addEntryInput.Active {
 		addItemInputView = m.addEntryInput.View()
 	}
-	content := m.viewport.View(activeTodoList.View()+addItemInputView, m.width, m.height-outsideContentHeight, activeTodoList.Cursor)
+	content := m.viewport.View(activeTodoList.View(func(t string) string {
+		return m.editEntryInput.View()
+	})+addItemInputView, m.width, m.height-outsideContentHeight, activeTodoList.Cursor)
 
 	return lipgloss.JoinVertical(lipgloss.Top, header, content, helpView, statusBarView)
 }
@@ -151,11 +165,7 @@ func (m model) View() string {
 func getLabels(tabs []data.NamedList) []string {
 	var tabLabels []string
 	for _, t := range tabs {
-		label := t.Name
-		if label == "" {
-			label = "[unnamed list]"
-		}
-		tabLabels = append(tabLabels, label)
+		tabLabels = append(tabLabels, t.Name)
 	}
 	return tabLabels
 }
@@ -191,15 +201,27 @@ func main() {
 		viewport:  viewport.New(),
 		addEntryInput: input.New(
 			"addEntryInput",
-			todolist.NewNewEntryCmd,
-			todolist.NewCancelNewEntryCmd,
+			todolist.NewCreateEntryCmd,
+			todolist.NewCancelCreateEntryCmd,
 			input.NewInput("new entry", "  [ ] "),
+		),
+		editEntryInput: input.New(
+			"editEntryInput",
+			todolist.NewUpdateEntryCmd,
+			todolist.NewCancelUpdateEntryCmd,
+			input.NewInput("edit entry", ""),
 		),
 		addListInput: input.New(
 			"addListInput",
 			tabs.NewCreateEntryCmd,
 			tabs.NewCancelCreateEntryCmd,
 			input.NewInput("new list", ""),
+		),
+		editListInput: input.New(
+			"editListInput",
+			tabs.NewUpdateEntryCmd,
+			tabs.NewCancelUpdateEntryCmd,
+			input.NewInput("edit list", ""),
 		),
 		saveOnQuitCallback: func(lists []data.NamedList) error {
 			return data.WriteData(lists, dbFilepath)

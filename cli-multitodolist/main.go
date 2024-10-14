@@ -134,8 +134,9 @@ func (m model) viewHeader() string {
 }
 
 func (m model) viewHelp() string {
-	helpKeys := append([][]key.Binding{m.keys.ShortHelp()}, m.header.Keys.Help()...)
-	helpKeys = append(helpKeys, m.getActiveTodolist().Keys.Help()...)
+	helpKeys := [][]key.Binding{m.keys.ShortHelp(), append(m.getActiveTodolist().Keys.HelpDirection(), m.header.Keys.HelpDirection()...)}
+	helpKeys = append(helpKeys, m.header.Keys.HelpActions())
+	helpKeys = append(helpKeys, m.getActiveTodolist().Keys.HelpActions()...)
 	return m.help.View(helpKeys)
 }
 

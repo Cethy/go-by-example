@@ -37,3 +37,23 @@ func NewCancelUpdateEntryCmd() tea.Cmd {
 		return CancelUpdateEntryMsg{}
 	}
 }
+
+type MoveItemUpMsg struct {
+	cursor int
+}
+
+func NewMoveItemUpCmd(cursor int) tea.Cmd {
+	return func() tea.Msg {
+		return MoveItemUpMsg{cursor}
+	}
+}
+
+type MoveItemDownMsg struct {
+	cursor int
+}
+
+func NewMoveItemDownCmd(cursor int) tea.Cmd {
+	return func() tea.Msg {
+		return MoveItemDownMsg{cursor}
+	}
+}

@@ -44,11 +44,27 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds = append(cmds, statusBar.NewStatusCmd("New entry cancelled"))
 	case UpdateEntryMsg:
 		m.ListItems[m.Cursor] = data.ListItem{Value: msg.Value, Checked: m.ListItems[m.Cursor].Checked}
+		m.editCursor = -1
 		cmds = append(cmds, statusBar.NewStatusCmd("Entry updated"))
-		m.editCursor = -1
 	case CancelUpdateEntryMsg:
-		cmds = append(cmds, statusBar.NewStatusCmd("Entry update cancelled"))
 		m.editCursor = -1
+		cmds = append(cmds, statusBar.NewStatusCmd("Entry update cancelled"))
+	case MoveItemUpMsg:
+		if msg.cursor > 0 {
+			movingUp := m.ListItems[msg.cursor]
+			m.ListItems[msg.cursor] = m.ListItems[msg.cursor-1]
+			m.ListItems[msg.cursor-1] = movingUp
+			m.Cursor = msg.cursor - 1
+			cmds = append(cmds, statusBar.NewStatusCmd("Entry moved up"))
+		}
+	case MoveItemDownMsg:
+		if msg.cursor < len(m.ListItems)-1 {
+			movingDown := m.ListItems[msg.cursor]
+			m.ListItems[msg.cursor] = m.ListItems[msg.cursor+1]
+			m.ListItems[msg.cursor+1] = movingDown
+			m.Cursor = msg.cursor + 1
+			cmds = append(cmds, statusBar.NewStatusCmd("Entry moved down"))
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.Keys.Up):
@@ -84,6 +100,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 
 			cmds = append(cmds, statusBar.NewStatusCmd("Entry removed"))
+		case key.Matches(msg, m.Keys.MoveItemUp):
+			cmds = append(cmds, NewMoveItemUpCmd(m.Cursor))
+		case key.Matches(msg, m.Keys.MoveItemDown):
+			cmds = append(cmds, NewMoveItemDownCmd(m.Cursor))
 		}
 	}
 

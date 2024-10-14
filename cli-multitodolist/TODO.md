@@ -6,14 +6,15 @@
 - [x] help block
 - [x] statusBar (notification holder)
 - [ ] correctly initialize app
+- [ ] refactor listitemdata
 
 
 ---
 
 # list 1
 
-- [x] 1 Foo
 - [x] 2 Bar
+- [x] 1 Foo
 - [x] 3 Baz
 - [ ] 4 Foo
 - [x] 5 Bar

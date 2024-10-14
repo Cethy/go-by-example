@@ -13,11 +13,11 @@ type KeyMap struct {
 var keys = KeyMap{
 	Left: key.NewBinding(
 		key.WithKeys("left", "h"),
-		key.WithHelp("←/h", "move left "),
+		key.WithHelp("←/h", "move left"),
 	),
 	Right: key.NewBinding(
 		key.WithKeys("right", "l"),
-		key.WithHelp("→/l", "move right   "),
+		key.WithHelp("→/l", "move right"),
 	),
 	AddItem: key.NewBinding(
 		key.WithKeys("z"),
@@ -25,7 +25,7 @@ var keys = KeyMap{
 	),
 	EditItem: key.NewBinding(
 		key.WithKeys("d"),
-		key.WithHelp("d", "edit list title"),
+		key.WithHelp("d", "edit list name"),
 	),
 	RemoveItem: key.NewBinding(
 		key.WithKeys("r"),
@@ -33,6 +33,10 @@ var keys = KeyMap{
 	),
 }
 
-func (k KeyMap) Help() [][]key.Binding {
-	return [][]key.Binding{{k.Left, k.Right}, {k.AddItem, k.EditItem, k.RemoveItem}}
+func (k KeyMap) HelpDirection() []key.Binding {
+	return []key.Binding{k.Left, k.Right}
+}
+
+func (k KeyMap) HelpActions() []key.Binding {
+	return []key.Binding{k.AddItem, k.EditItem, k.RemoveItem}
 }

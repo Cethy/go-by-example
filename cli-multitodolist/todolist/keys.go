@@ -3,12 +3,14 @@ package todolist
 import "github.com/charmbracelet/bubbles/key"
 
 type KeyMap struct {
-	Up         key.Binding
-	Down       key.Binding
-	Check      key.Binding
-	AddItem    key.Binding
-	EditItem   key.Binding
-	RemoveItem key.Binding
+	Up           key.Binding
+	Down         key.Binding
+	Check        key.Binding
+	AddItem      key.Binding
+	EditItem     key.Binding
+	RemoveItem   key.Binding
+	MoveItemUp   key.Binding
+	MoveItemDown key.Binding
 
 	Enter  key.Binding
 	Cancel key.Binding
@@ -39,6 +41,14 @@ var keys = KeyMap{
 		key.WithKeys("x"),
 		key.WithHelp("x", "remove entry "),
 	),
+	MoveItemUp: key.NewBinding(
+		key.WithKeys("c"),
+		key.WithHelp("c", "move entry up"),
+	),
+	MoveItemDown: key.NewBinding(
+		key.WithKeys("v"),
+		key.WithHelp("v", "move entry down"),
+	),
 
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),
@@ -50,9 +60,13 @@ var keys = KeyMap{
 	),
 }
 
-func (k KeyMap) Help() [][]key.Binding {
+func (k KeyMap) HelpDirection() []key.Binding {
+	return []key.Binding{k.Up, k.Down}
+}
+
+func (k KeyMap) HelpActions() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Check, k.AddItem, k.EditItem, k.RemoveItem},
+		{k.AddItem, k.EditItem, k.RemoveItem, k.Check, k.MoveItemUp, k.MoveItemDown},
 		{k.Enter, k.Cancel},
 	}
 }

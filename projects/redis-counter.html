@@ -40,6 +40,13 @@
 <h2 class="text-2xl font-bold">Instructions</h2>
 <p class="">Make a program capable of storing a counter in redis
 and increment each time its invoked.</p>
+<h2 class="text-2xl font-bold">Usage</h2>
+<pre><code class="language-shell"># docker pull redis
+# docker run -d --name redis-counter -p 6379:6379 redis
+# go get github.com/redis/go-redis/v9
+
+go run redis-counter/main.go
+</code></pre>
 
 
     <div>

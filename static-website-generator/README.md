@@ -27,3 +27,15 @@ It must be capable of:
 - generator extensibility
 - fragment transformer
 - article transformer
+
+## Usage
+
+```shell
+# go get github.com/fsnotify/fsnotify
+# go get github.com/yuin/goldmark-meta
+
+# build
+go run static-website-generator/generator.go
+# serve
+go run static-website-generator/serve.go
+```

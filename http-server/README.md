@@ -17,3 +17,9 @@ Make a program capable of serving a basic website
 - parameterized port number using cli flag
 - static file serving
 - dynamic serving
+
+## Usage
+
+```shell
+go run http-server/main.go [-p=8001]
+```

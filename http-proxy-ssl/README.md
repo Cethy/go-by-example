@@ -16,3 +16,13 @@ and make the proxy support ssl encryption and https connections.
 
 - listen on 2 different port for http & https connections
 
+## Usage
+
+```shell
+# brew install mkcert
+# mkcert -install 
+# mkcert localhost 127.0.0.1 ::1
+## mkcert -uninstall
+
+go run http-proxy-ssl/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p=8003] [-ps=8004] [-url=true]
+```

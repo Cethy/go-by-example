@@ -17,3 +17,11 @@ capable of producing html code compatible with tailwindCSS
 
 - "classname" injector transformer
 - "tailwindcss" transformer
+
+## Usage
+
+```shell
+# go get github.com/yuin/goldmark
+
+go run markdown2tailwindcss/main.go
+```

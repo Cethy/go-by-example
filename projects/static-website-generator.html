@@ -33,7 +33,7 @@
         Static Website Generator
     </h1>
 
-    <img src="https://cethy.github.io/go-by-example/static/article3.jpg" class="object-cover h-32 w-full mb-5 rounded-lg" alt="image article">
+    <img src="https://images.unsplash.com/photo-1611647832580-377268dba7cb?ixid=M3w2NjYzMTJ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MjkyNzkxOTh8&ixlib=rb-4.0.3" class="object-cover h-32 w-full mb-5 rounded-lg" alt="image article">
 
     <article class="flex flex-col gap-4">
     <h1 class="text-3xl font-bold">Static Website Generator</h1>
@@ -58,6 +58,7 @@
 <li class="">generator extensibility</li>
 <li class="">fragment transformer</li>
 <li class="">article transformer</li>
+<li class="">article validator (ensure mandatory metadata are present and add a random unsplash cover image if none is present)</li>
 </ul>
 <h2 class="text-2xl font-bold">Usage</h2>
 <pre><code class="language-shell"># go get github.com/fsnotify/fsnotify
@@ -68,6 +69,10 @@ go run static-website-generator/generator.go
 # serve
 go run static-website-generator/serve.go
 </code></pre>
+<h2 class="text-2xl font-bold">TODO</h2>
+<ul class="list-disc list-outside md:list-inside">
+<li class="">[ ] use cobra</li>
+</ul>
 
 
     <div>

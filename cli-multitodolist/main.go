@@ -173,7 +173,10 @@ func getLabels(tabs []data.NamedList) []string {
 
 func main() {
 	dbFilepath := "./cli-multitodolist/TODO.md"
-	namedLists := data.ReadData(dbFilepath)
+	namedLists, err := data.ReadData(dbFilepath)
+	if err != nil {
+		panic(err)
+	}
 
 	var todolists []todolist.Model
 	for _, namedList := range namedLists {

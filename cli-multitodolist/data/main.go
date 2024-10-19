@@ -52,12 +52,12 @@ func readList(raw string) []ListItem {
 	return listItems
 }
 
-func ReadData(sourcePath string) []NamedList {
+func ReadData(sourcePath string) ([]NamedList, error) {
 	var namedLists []NamedList
 
 	rawContent, err := os.ReadFile(sourcePath)
 	if err != nil {
-		panic(err)
+		return namedLists, err
 	}
 
 	// split lists
@@ -78,7 +78,7 @@ func ReadData(sourcePath string) []NamedList {
 		})
 	}
 
-	return namedLists
+	return namedLists, nil
 }
 
 func WriteData(namedLists []NamedList, targetPath string) error {

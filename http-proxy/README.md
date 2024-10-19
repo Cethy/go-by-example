@@ -1,8 +1,7 @@
 ---
 Order: 3
 Title: HTTP Proxy
-Summary: Basic HTTP Proxy
-ImgSrc: static/article1.jpg
+ImgSrc: https://images.unsplash.com/photo-1529101091764-c3526daf38fe?ixid=M3w2NjYzMTJ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MjkyNzkyNjV8&ixlib=rb-4.0.3
 ---
 
 # HTTP Proxy

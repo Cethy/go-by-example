@@ -1,8 +1,7 @@
 ---
 Order: 1
 Title: HTTP Server
-Summary: Basic HTTP Server
-ImgSrc: static/article2.jpg
+ImgSrc: https://images.unsplash.com/photo-1489875347897-49f64b51c1f8?ixid=M3w2NjYzMTJ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MjkyNzc2MjB8&ixlib=rb-4.0.3
 ---
 
 # HTTP Server

@@ -1,8 +1,7 @@
 ---
 Order: 6
 Title: HTTP Proxy Cache
-Summary: Basic Proxy Cache
-ImgSrc: static/article1.jpg
+ImgSrc: https://images.unsplash.com/photo-1653387137517-fbc54d488ed8?ixid=M3w2NjYzMTJ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MjkyNzkxOTh8&ixlib=rb-4.0.3
 ---
 
 # HTTP Proxy (Cache upgrade)

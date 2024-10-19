@@ -1,7 +1,6 @@
 ---
 Order: 10
-Title: Todo List (CLI)
-Summary: Todo List CLI program 
+Title: Todo List (CLI) 
 ImgSrc: static/article1.jpg
 Dependencies: ["./demo.gif"]
 ---

@@ -2,7 +2,7 @@
 Order: 9
 Title: Static Website Generator
 Summary: Opinionated Website Generator (powering this website)
-ImgSrc: static/article3.jpg
+ImgSrc: https://images.unsplash.com/photo-1611647832580-377268dba7cb?ixid=M3w2NjYzMTJ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MjkyNzkxOTh8&ixlib=rb-4.0.3
 ---
 
 # Static Website Generator
@@ -27,6 +27,7 @@ It must be capable of:
 - generator extensibility
 - fragment transformer
 - article transformer
+- article validator (ensure mandatory metadata are present and add a random unsplash cover image if none is present)
 
 ## Usage
 
@@ -39,3 +40,6 @@ go run static-website-generator/generator.go
 # serve
 go run static-website-generator/serve.go
 ```
+
+## TODO
+- [ ] use cobra

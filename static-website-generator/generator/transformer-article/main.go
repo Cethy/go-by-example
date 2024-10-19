@@ -1,21 +1,12 @@
 package transformer_article
 
 import (
-	"bytes"
-	"github.com/yuin/goldmark"
-	meta "github.com/yuin/goldmark-meta"
-	"github.com/yuin/goldmark/parser"
-	"github.com/yuin/goldmark/renderer"
-	"github.com/yuin/goldmark/renderer/html"
-	"github.com/yuin/goldmark/util"
-	goldmarkTailwindcss "go-by-example/libs/goldmark-tailwindcss"
+	"go-by-example/static-website-generator/article"
 	"go-by-example/static-website-generator/generator"
 	transformerfragment "go-by-example/static-website-generator/generator/transformer-fragment"
-	"os"
 	"path"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
 )
 
@@ -47,119 +38,50 @@ type articleTransformer struct {
 	articleFilesBuilt   []string
 }
 
-type Article struct {
-	ProjectDirname string
-	Title          string
-	ImgSrc         string
-	Order          int
-	Content        string
-	Dependencies   []string
-}
-
-type ArticleSlice []Article
-
-func (s ArticleSlice) Len() int           { return len(s) }
-func (s ArticleSlice) Less(i, j int) bool { return s[i].Order < s[j].Order }
-func (s ArticleSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-
 var rootPath = path.Join("./")
 
-func (p *articleTransformer) getArticlesData() ArticleSlice {
-	var articles ArticleSlice
-
-	mdConverter := goldmark.New(
-		goldmark.WithExtensions(
-			meta.Meta,
-		),
-		goldmark.WithRenderer(
-			renderer.NewRenderer(renderer.WithNodeRenderers(util.Prioritized(html.NewRenderer(), 1000))),
-		),
-		goldmark.WithParser(
-			parser.NewParser(parser.WithBlockParsers(parser.DefaultBlockParsers()...),
-				parser.WithInlineParsers(parser.DefaultInlineParsers()...),
-				parser.WithParagraphTransformers(parser.DefaultParagraphTransformers()...),
-				parser.WithASTTransformers(
-					util.Prioritized(goldmarkTailwindcss.NewTransformer(), 100),
-				),
-			),
-		),
-	)
-
-	root, err := os.ReadDir(rootPath)
-	if err != nil {
-		panic(err)
-	}
-	for _, dir := range root {
-		if dir.IsDir() {
-			articleMd, err := os.ReadFile(path.Join(rootPath, dir.Name(), "README.md"))
-			if err != nil {
-				continue
-			}
-
-			var buf bytes.Buffer
-			context := parser.NewContext()
-			if err := mdConverter.Convert(articleMd, &buf, parser.WithContext(context)); err != nil {
-				panic(err)
-			}
-			metaData := meta.Get(context)
-
-			var Dependencies []string
-			if metaData["Dependencies"] != nil {
-				for _, dep := range metaData["Dependencies"].([]interface{}) {
-					Dependencies = append(Dependencies, dep.(string)) //path.Join(rootPath, dir.Name(), dep.(string)))
-				}
-			}
-
-			articles = append(articles, Article{
-				ProjectDirname: dir.Name(),
-				//ProjectDirname: "projects/" + dir.Name() + ".html",
-				Title:        metaData["Title"].(string),
-				ImgSrc:       metaData["ImgSrc"].(string),
-				Order:        metaData["Order"].(int),
-				Content:      buf.String(),
-				Dependencies: Dependencies,
-			})
-		}
-	}
-
-	sort.Sort(articles)
-
-	return articles
-}
-
-func (p *articleTransformer) getGithubLink(articleData Article) string {
+func (p *articleTransformer) getGithubLink(articleData article.Article) string {
 	fragment := p.fragmentTransformer.GetFragmentContent(p.Config.fragmentGithubLinkFilename)
 	fragment = strings.ReplaceAll(fragment, "{projectDir}", articleData.ProjectDirname)
 
 	return fragment
 }
 
-func (p *articleTransformer) getTargetArticleRelativePath(articleData Article) string {
+func (p *articleTransformer) getTargetArticleRelativePath(articleData article.Article) string {
 	// @todo add to config
 	return "projects/" + articleData.ProjectDirname + ".html"
 }
 
-func (p *articleTransformer) getIndexArticleListItem(articleData Article) string {
-	article := p.fragmentTransformer.GetFragmentContent(p.Config.fragmentListItemFilename)
+func getImgSrc(original string) string {
+	if original[:4] != "http" {
+		// if it's a local file, prefix basePublicPath
+		return "{basePublicPath}" + original
+	}
+	return original
+}
 
-	article = strings.ReplaceAll(article, "{link}", p.getTargetArticleRelativePath(articleData))
-	article = strings.ReplaceAll(article, "{title}", articleData.Title)
-	article = strings.ReplaceAll(article, "{imgSrc}", articleData.ImgSrc)
+func (p *articleTransformer) getIndexArticleListItem(data article.Article) string {
+	html := p.fragmentTransformer.GetFragmentContent(p.Config.fragmentListItemFilename)
 
-	return article
+	html = strings.ReplaceAll(html, "{link}", p.getTargetArticleRelativePath(data))
+	html = strings.ReplaceAll(html, "{title}", data.Title)
+
+	html = strings.ReplaceAll(html, "{imgSrc}", getImgSrc(data.ImgSrc))
+
+	return html
 }
 
 func (p *articleTransformer) getIndexArticleList() string {
-	articles := p.getArticlesData()
+	articles := article.GetArticlesData()
 	list := ""
-	for _, article := range articles {
-		list = list + p.getIndexArticleListItem(article)
+	for _, data := range articles {
+		list = list + p.getIndexArticleListItem(data)
 	}
 	return list
 }
 
-func (p *articleTransformer) buildArticleFile(article Article) {
-	relativeFilePath := p.getTargetArticleRelativePath(article)
+func (p *articleTransformer) buildArticleFile(data article.Article) {
+	relativeFilePath := p.getTargetArticleRelativePath(data)
 
 	if slices.Contains(p.articleFilesBuilt, relativeFilePath) {
 		return
@@ -167,22 +89,18 @@ func (p *articleTransformer) buildArticleFile(article Article) {
 
 	articleRaw := p.fragmentTransformer.GetFragmentContent(p.Config.fragmentArticleFilename)
 
-	articleRaw = strings.ReplaceAll(articleRaw, "{title}", article.Title)
-	articleRaw = strings.ReplaceAll(articleRaw, "{imgSrc}", article.ImgSrc)
-	articleRaw = strings.ReplaceAll(articleRaw, "{content}", article.Content)
-	articleRaw = strings.ReplaceAll(articleRaw, "{github-link}", p.getGithubLink(article))
-	/*fileContent, err := p.generator.InvokeTransformers(articleRaw)
-	if err != nil {
-		panic(err)
-	}*/
+	articleRaw = strings.ReplaceAll(articleRaw, "{title}", data.Title)
+	articleRaw = strings.ReplaceAll(articleRaw, "{imgSrc}", getImgSrc(data.ImgSrc))
+	articleRaw = strings.ReplaceAll(articleRaw, "{content}", data.Content)
+	articleRaw = strings.ReplaceAll(articleRaw, "{github-link}", p.getGithubLink(data))
 
 	// copy & update dependencies
-	if len(article.Dependencies) > 0 {
-		for _, dep := range article.Dependencies {
-			relativeTargetPath := filepath.Join("projects/", article.ProjectDirname, dep)
-			p.generator.CopyFile(filepath.Join(rootPath, article.ProjectDirname, dep), relativeTargetPath)
+	if len(data.Dependencies) > 0 {
+		for _, dep := range data.Dependencies {
+			relativeTargetPath := filepath.Join("projects/", data.ProjectDirname, dep)
+			p.generator.CopyFile(filepath.Join(rootPath, data.ProjectDirname, dep), relativeTargetPath)
 
-			articleRaw = strings.ReplaceAll(articleRaw, dep, filepath.Join(article.ProjectDirname, dep))
+			articleRaw = strings.ReplaceAll(articleRaw, dep, filepath.Join(data.ProjectDirname, dep))
 		}
 	}
 
@@ -198,9 +116,9 @@ func (p *articleTransformer) Transform(fileContent string) (string, error) {
 
 	fileContent = strings.ReplaceAll(fileContent, p.Config.fragmentListItemId, p.getIndexArticleList())
 
-	articles := p.getArticlesData()
-	for _, article := range articles {
-		p.buildArticleFile(article)
+	articles := article.GetArticlesData()
+	for _, data := range articles {
+		p.buildArticleFile(data)
 	}
 
 	p.pluginIsRunning = false

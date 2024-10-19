@@ -1,4 +1,13 @@
-<a href="{basePublicPath}{link}" class="p-4 md:w-1/2 hover:underline" title="{title}">
-    <img src="{basePublicPath}{imgSrc}" class="mb-3 rounded-lg" alt="image article">
-    <h3>{title}</h3>
-</a>
+<li class="w-full md:w-1/2 aspect-video">
+    <a class="m-4 block hover:underline" href="{basePublicPath}{link}">
+        <div class="mb-2 bg-gradient-to-r from-purple-500 to-sky-400 rounded-lg">
+            <div
+                    class="block p-3 h-40 bg-cover bg-center rounded-lg flex items-end"
+                    title="{title}"
+                    style="background-image: url({imgSrc})"
+            >
+            </div>
+        </div>
+        <h3 class="text-xl font-semibold">{title}</h3>
+    </a>
+</li>

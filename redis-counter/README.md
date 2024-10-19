@@ -1,8 +1,7 @@
 ---
 Order: 5
 Title: Redis counter
-Summary: Redis counter
-ImgSrc: static/article3.jpg
+ImgSrc: https://images.unsplash.com/photo-1517512006864-7edc3b933137?ixid=M3w2NjYzMTJ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MjkyNzkxOTh8&ixlib=rb-4.0.3
 ---
 
 # Redis counter

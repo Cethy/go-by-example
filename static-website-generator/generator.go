@@ -35,8 +35,8 @@ func main() {
 	)
 
 	// order matter
-	g.RegisterTransformer(basePublicPathTransformer)
 	g.RegisterTransformer(articleTransformer)
+	g.RegisterTransformer(basePublicPathTransformer)
 	g.RegisterTransformer(fragmentTransformer)
 
 	g.Build()

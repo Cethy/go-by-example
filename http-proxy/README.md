@@ -17,5 +17,5 @@ Make a program capable of proxying http requests made to it.
 ## Usage
 
 ```shell
-go run http-proxy/main.go [-p=8003] [-url=true]
+go run main.go [-p=8003] [-url=true]
 ```

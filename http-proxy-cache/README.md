@@ -22,5 +22,5 @@ and make the proxy cache the response to return it without polling the source ne
 # docker run -d --name redis-cache -p 6379:6379 redis
 # go get github.com/redis/go-redis/v9
 
-go run http-proxy-cache/main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p=8005] [-ps=8006] [-url=true]
+go run main.go -cert=localhost+2.pem -key=localhost+2-key.pem [-p=8005] [-ps=8006] [-url=true]
 ```

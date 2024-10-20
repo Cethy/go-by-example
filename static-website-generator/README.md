@@ -35,10 +35,12 @@ It must be capable of:
 # go get github.com/fsnotify/fsnotify
 # go get github.com/yuin/goldmark-meta
 
+#validate
+go run validate.go
 # build
-go run static-website-generator/generator.go
+go run generator.go
 # serve
-go run static-website-generator/serve.go
+go run serve.go
 ```
 
 ## TODO

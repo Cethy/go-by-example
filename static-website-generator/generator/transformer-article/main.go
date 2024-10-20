@@ -1,12 +1,12 @@
 package transformer_article
 
 import (
-	"go-by-example/static-website-generator/article"
-	"go-by-example/static-website-generator/generator"
-	transformerfragment "go-by-example/static-website-generator/generator/transformer-fragment"
 	"path"
 	"path/filepath"
 	"slices"
+	"static-website-generator/article"
+	"static-website-generator/generator"
+	transformerfragment "static-website-generator/generator/transformer-fragment"
 	"strings"
 )
 
@@ -38,7 +38,7 @@ type articleTransformer struct {
 	articleFilesBuilt   []string
 }
 
-var rootPath = path.Join("./")
+var rootPath = path.Join("../")
 
 func (p *articleTransformer) getGithubLink(articleData article.Article) string {
 	fragment := p.fragmentTransformer.GetFragmentContent(p.Config.fragmentGithubLinkFilename)

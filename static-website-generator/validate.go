@@ -1,11 +1,11 @@
 package main
 
 import (
-	"go-by-example/static-website-generator/article"
-	"go-by-example/static-website-generator/article/unsplash"
 	"log"
 	"os"
 	"path"
+	"static-website-generator/article"
+	"static-website-generator/article/unsplash"
 	"strconv"
 	"strings"
 )
@@ -16,9 +16,11 @@ type Error struct {
 }
 
 func tryFixImgSrc(projectDirName string) error {
-	accessToken, err := os.ReadFile(path.Join("static-website-generator", ".unsplashAccessToken"))
+	articlePath := path.Join("..", projectDirName, "README.md")
+
+	accessToken, err := os.ReadFile(".unsplashAccessToken")
 	if err != nil {
-		log.Println("You need to a create a static-website-generator/.unsplashAccessToken file")
+		log.Println("You need to a create a .unsplashAccessToken file")
 		panic(err)
 	}
 
@@ -27,7 +29,7 @@ func tryFixImgSrc(projectDirName string) error {
 		return err
 	}
 
-	articleMd, err := os.ReadFile(path.Join(projectDirName, "README.md"))
+	articleMd, err := os.ReadFile(articlePath)
 
 	lines := strings.Split(string(articleMd), "\n")
 	for i, line := range lines {
@@ -45,7 +47,7 @@ func tryFixImgSrc(projectDirName string) error {
 		}
 	}
 
-	return os.WriteFile(path.Join(projectDirName, "README.md"), []byte(strings.Join(lines, "\n")), 0644)
+	return os.WriteFile(articlePath, []byte(strings.Join(lines, "\n")), 0644)
 }
 
 // ensure every article's README has the mandatory metadata set and add a random unsplash if no ImgSrc value is set

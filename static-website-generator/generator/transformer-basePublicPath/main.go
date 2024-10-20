@@ -1,7 +1,7 @@
 package transformer_basePublicPath
 
 import (
-	"go-by-example/static-website-generator/generator"
+	"static-website-generator/generator"
 	"strings"
 )
 

@@ -8,7 +8,7 @@ import (
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/util"
-	goldmarkTailwindcss "go-by-example/libs/goldmark-tailwindcss"
+	goldmarkTailwindcss "markdown2tailwindcss/goldmark-tailwindcss"
 	"os"
 	"path"
 	"sort"
@@ -29,7 +29,7 @@ func (s ArticleSlice) Len() int           { return len(s) }
 func (s ArticleSlice) Less(i, j int) bool { return s[i].Order < s[j].Order }
 func (s ArticleSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
-var rootPath = path.Join("./")
+var rootPath = path.Join("../")
 
 var mdConverter = goldmark.New(
 	goldmark.WithExtensions(

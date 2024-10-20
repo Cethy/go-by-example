@@ -1,10 +1,10 @@
 package transformer_fragment
 
 import (
-	"go-by-example/static-website-generator/generator"
 	"os"
 	"path/filepath"
 	"regexp"
+	"static-website-generator/generator"
 	"strings"
 )
 

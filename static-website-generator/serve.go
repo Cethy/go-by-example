@@ -10,7 +10,7 @@ import (
 
 func main() {
 	port := flag.Int("p", 8007, "Port number")
-	srcFilePathname := flag.String("srcFilePathname", "./static-website-generator", "pathname to src files")
+	srcFilePathname := flag.String("srcFilePathname", "./", "pathname to src files")
 
 	flag.Parse()
 

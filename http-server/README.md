@@ -20,5 +20,5 @@ Make a program capable of serving a basic website
 ## Usage
 
 ```shell
-go run http-server/main.go [-p=8001]
+go run main.go [-p=8001]
 ```

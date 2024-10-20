@@ -20,5 +20,5 @@ and implement a *middleware* interface to extend the HTTP Server features.
 ## Usage
 
 ```shell
-go run http-server-middleware/main.go [-p=8002]
+go run main.go [-p=8002]
 ```

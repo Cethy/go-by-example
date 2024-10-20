@@ -3,7 +3,7 @@ package goldmark_tailwindcss
 import (
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/parser"
-	goldmarkClassname "go-by-example/libs/goldmark-classname"
+	goldmarkClassname "markdown2tailwindcss/goldmark-classname"
 )
 
 func getHeadingClassname(node ast.Node) string {

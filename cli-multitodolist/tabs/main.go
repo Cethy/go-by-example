@@ -1,9 +1,9 @@
 package tabs
 
 import (
+	"cli-multitodolist/input"
+	"cli-multitodolist/statusBar"
 	"github.com/charmbracelet/bubbles/key"
-	"go-by-example/cli-multitodolist/input"
-	"go-by-example/cli-multitodolist/statusBar"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"

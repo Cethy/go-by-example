@@ -10,8 +10,8 @@ import (
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/util"
-	goldmarkTailwindcss "go-by-example/libs/goldmark-tailwindcss"
 	"log"
+	goldmarkTailwindcss "markdown2tailwindcss/goldmark-tailwindcss"
 	"net/http"
 	"strings"
 )

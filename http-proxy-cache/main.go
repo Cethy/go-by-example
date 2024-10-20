@@ -3,15 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	httpmiddleware "go-by-example/libs/http-middleware"
-	httpproxy "go-by-example/libs/http-proxy"
+	"http-proxy-cache/handler"
+	httpmiddleware "http-server-middleware/http-middleware"
 	"log"
 	"net/http"
 )
 
 func listenHttp(urlMode bool, port int) {
 	httpServer := http.NewServeMux()
-	httpServer.HandleFunc("/", httpmiddleware.Chain(httpproxy.GetProxyCacheHandler(urlMode), httpmiddleware.LoggingPre("[HTTP ]"), httpmiddleware.PostLogging()))
+	httpServer.HandleFunc("/", httpmiddleware.Chain(handler.GetProxyCacheHandler(urlMode), httpmiddleware.LoggingPre("[HTTP ]"), httpmiddleware.PostLogging()))
 
 	fmt.Println("http listening on port:", port)
 
@@ -24,7 +24,7 @@ func listenHttp(urlMode bool, port int) {
 
 func listenHttps(urlMode bool, port int, certFile string, keyFile string) {
 	httpsServer := http.NewServeMux()
-	httpsServer.HandleFunc("/", httpmiddleware.Chain(httpproxy.GetProxyCacheHandler(urlMode), httpmiddleware.LoggingPre("[HTTPS]"), httpmiddleware.PostLogging()))
+	httpsServer.HandleFunc("/", httpmiddleware.Chain(handler.GetProxyCacheHandler(urlMode), httpmiddleware.LoggingPre("[HTTPS]"), httpmiddleware.PostLogging()))
 
 	fmt.Println("https listening on port:", port)
 

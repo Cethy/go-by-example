@@ -13,3 +13,12 @@ Build upon previous [Todo list project](./cli-todolist.html)
 and add features to manage multiple lists.
 
 ![Made with VHS](./demo.gif)
+
+## Usage
+
+```shell
+# github.com/charmbracelet/lipgloss v0.13.0
+# github.com/muesli/reflow v0.3.0
+
+go run main.go
+```

@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	httpmiddleware "go-by-example/libs/http-middleware"
-	httpproxy "go-by-example/libs/http-proxy"
+	httpproxy "http-proxy/handler"
+	httpmiddleware "http-server-middleware/http-middleware"
 	"log"
 	"net/http"
 )

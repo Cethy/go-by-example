@@ -6,7 +6,7 @@ Output demo.gif
 Set Width 1600
 Set Height 1200
 
-Type "go run cli-multitodolist/main.go"
+Type "go run main.go"
 Enter
 
 Sleep 2250ms

@@ -2,7 +2,7 @@
 
 - [x] add list
 - [x] delete list
-- [ ] update list name
+- [x] update list name
 - [x] help block
 - [x] statusBar (notification holder)
 - [ ] correctly initialize app

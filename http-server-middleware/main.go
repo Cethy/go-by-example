@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	httpmiddleware "go-by-example/libs/http-middleware"
+	httpmiddleware "http-server-middleware/http-middleware"
 	"log"
 	"net/http"
 )

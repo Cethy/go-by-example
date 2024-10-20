@@ -4,12 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
-	"go-by-example/static-website-generator/generator"
-	transformerarticle "go-by-example/static-website-generator/generator/transformer-article"
-	transformerbasepublicpath "go-by-example/static-website-generator/generator/transformer-basePublicPath"
-	transformerFragment "go-by-example/static-website-generator/generator/transformer-fragment"
 	"os"
 	"path/filepath"
+	"static-website-generator/generator"
+	transformerarticle "static-website-generator/generator/transformer-article"
+	transformerbasepublicpath "static-website-generator/generator/transformer-basePublicPath"
+	transformerFragment "static-website-generator/generator/transformer-fragment"
 	"time"
 )
 
@@ -126,7 +126,7 @@ func RunGenerator(basePathname, basePublicPath string) {
 }
 
 func main() {
-	basePathname := flag.String("basePathname", "./static-website-generator", "pathname to src files")
+	basePathname := flag.String("basePathname", "./", "pathname to src files")
 	basePublicPath := flag.String("basePublicPath", "/", "base public path (eg: https://cethy.github.io/go-by-example/)")
 	flag.Parse()
 

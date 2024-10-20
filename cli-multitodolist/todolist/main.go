@@ -1,12 +1,12 @@
 package todolist
 
 import (
+	"cli-multitodolist/data"
+	"cli-multitodolist/input"
+	"cli-multitodolist/statusBar"
 	"fmt"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"go-by-example/cli-multitodolist/data"
-	"go-by-example/cli-multitodolist/input"
-	"go-by-example/cli-multitodolist/statusBar"
 )
 
 type Model struct {

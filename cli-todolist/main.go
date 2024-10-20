@@ -1,13 +1,13 @@
 package main
 
 import (
+	"cli-todolist/components/keys"
 	"fmt"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"go-by-example/cli-todolist/components/keys"
 	"os"
 	"regexp"
 )
@@ -200,7 +200,7 @@ func writeData(items []todoItem, targetPath string) error {
 }
 
 func main() {
-	dbFilepath := "./cli-todolist/TODO.md"
+	dbFilepath := "./TODO.md"
 
 	p := tea.NewProgram(newTodoListUI(
 		readData(dbFilepath),

@@ -14,5 +14,5 @@ from an input.
 ## Usage
 
 ```shell
-go run regex/main.go -m mf{ze}fz{e}f{}foo
+go run main.go -m mf{ze}fz{e}f{}foo
 ```

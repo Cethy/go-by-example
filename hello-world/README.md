@@ -13,5 +13,5 @@ Make a program print out "Hello world" in the console.
 ## Usage
 
 ```shell
-go run hello-world/main.go
+go run main.go
 ```

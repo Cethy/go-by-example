@@ -1,14 +1,14 @@
-package http_proxy
+package handler
 
 import (
 	"errors"
-	httpmiddleware "go-by-example/libs/http-middleware"
+	httpmiddleware "http-server-middleware/http-middleware"
 	"io"
 	"net/http"
 	"net/url"
 )
 
-func getUrl(r *http.Request, urlMode bool) (string, error) {
+func GetUrl(r *http.Request, urlMode bool) (string, error) {
 	destURL, err := url.Parse(r.URL.String())
 	if urlMode {
 		destURL, err = url.Parse(r.URL.Query().Get("url"))
@@ -27,7 +27,7 @@ func getUrl(r *http.Request, urlMode bool) (string, error) {
 
 func GetProxyHandler(urlMode bool) httpmiddleware.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) (status int, err error) {
-		destUrl, err := getUrl(r, urlMode)
+		destUrl, err := GetUrl(r, urlMode)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return http.StatusBadRequest, err

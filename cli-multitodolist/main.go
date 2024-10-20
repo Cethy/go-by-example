@@ -1,18 +1,18 @@
 package main
 
 import (
+	"cli-multitodolist/data"
+	"cli-multitodolist/help"
+	"cli-multitodolist/input"
+	"cli-multitodolist/keys"
+	"cli-multitodolist/statusBar"
+	"cli-multitodolist/tabs"
+	"cli-multitodolist/todolist"
+	"cli-multitodolist/viewport"
 	"fmt"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"go-by-example/cli-multitodolist/data"
-	"go-by-example/cli-multitodolist/help"
-	"go-by-example/cli-multitodolist/input"
-	"go-by-example/cli-multitodolist/keys"
-	"go-by-example/cli-multitodolist/statusBar"
-	"go-by-example/cli-multitodolist/tabs"
-	"go-by-example/cli-multitodolist/todolist"
-	"go-by-example/cli-multitodolist/viewport"
 	"io"
 	"log"
 	"os"
@@ -172,8 +172,11 @@ func getLabels(tabs []data.NamedList) []string {
 }
 
 func main() {
-	dbFilepath := "./cli-multitodolist/TODO.md"
-	namedLists := data.ReadData(dbFilepath)
+	dbFilepath := "./TODO.md"
+	namedLists, err := data.ReadData(dbFilepath)
+	if err != nil {
+		panic(err)
+	}
 
 	var todolists []todolist.Model
 	for _, namedList := range namedLists {

@@ -1,11 +1,12 @@
-package http_proxy
+package handler
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"github.com/redis/go-redis/v9"
-	httpmiddleware "go-by-example/libs/http-middleware"
+	"http-proxy/handler"
+	httpmiddleware "http-server-middleware/http-middleware"
 	"io"
 	"log"
 	"net/http"
@@ -22,7 +23,7 @@ func GetProxyCacheHandler(urlMode bool) httpmiddleware.HandlerFunc {
 	})
 
 	return func(w http.ResponseWriter, r *http.Request) (status int, err error) {
-		destUrl, err := getUrl(r, urlMode)
+		destUrl, err := handler.GetUrl(r, urlMode)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return http.StatusBadRequest, err

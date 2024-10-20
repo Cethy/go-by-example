@@ -21,5 +21,5 @@ make a simple persisted todo list in the console.
 # go get github.com/charmbracelet/bubbles/help
 # go get github.com/charmbracelet/bubbles/textinput
 
-go run cli-todolist/main.go
+go run main.go
 ```

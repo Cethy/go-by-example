@@ -36,12 +36,11 @@ It must be capable of:
 # go get github.com/yuin/goldmark-meta
 
 #validate
-go run validate.go
+go run main.go validate
 # build
-go run generator.go
+go run main.go generate
+# watch
+go run main.go watch
 # serve
-go run serve.go
+go run main.go serve
 ```
-
-## TODO
-- [ ] use cobra

@@ -28,6 +28,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./static-website-generator
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,9 +41,9 @@ jobs:
         with:
           go-version: 1.23.1
       - name: Build
-        run: go run static-website-generator/generator.go -basePublicPath="https://cethy.github.io/go-by-example/"
+        run: go run generator.go -basePublicPath="https://cethy.github.io/go-by-example/"
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./static-website-generator/output/
+          publish_dir: ./output/

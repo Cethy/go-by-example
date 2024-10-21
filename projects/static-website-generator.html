@@ -65,16 +65,14 @@
 # go get github.com/yuin/goldmark-meta
 
 #validate
-go run validate.go
+go run main.go validate
 # build
-go run generator.go
+go run main.go generate
+# watch
+go run main.go watch
 # serve
-go run serve.go
+go run main.go serve
 </code></pre>
-<h2 class="text-2xl font-bold">TODO</h2>
-<ul class="list-disc list-outside md:list-inside">
-<li class="">[ ] use cobra</li>
-</ul>
 
 
     <div>

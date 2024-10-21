@@ -41,7 +41,7 @@ jobs:
         with:
           go-version: 1.23.1
       - name: Build
-        run: go run generator.go -basePublicPath="https://cethy.github.io/go-by-example/"
+        run: go run main.go generate --basePublicPath="https://cethy.github.io/go-by-example/"
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

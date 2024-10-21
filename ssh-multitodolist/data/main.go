@@ -12,8 +12,8 @@ type ListItem struct {
 }
 
 type NamedList struct {
-	Name string
-	List []ListItem
+	Name  string
+	Items []ListItem
 }
 
 /**
@@ -75,8 +75,8 @@ func ReadData(sourcePath string) ([]NamedList, error) {
 		}
 
 		namedLists = append(namedLists, NamedList{
-			Name: name,
-			List: readList(rawList),
+			Name:  name,
+			Items: readList(rawList),
 		})
 	}
 
@@ -92,7 +92,7 @@ func WriteData(namedLists []NamedList, targetPath string) error {
 		if namedList.Name != "" {
 			content += "# " + namedList.Name + "\n\n"
 		}
-		for _, listItem := range namedList.List {
+		for _, listItem := range namedList.Items {
 			Checked := " "
 			if listItem.Checked {
 				Checked = "x"

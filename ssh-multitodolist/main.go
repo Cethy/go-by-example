@@ -7,8 +7,8 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"ssh-multitodolist/tui/data"
-	"ssh-multitodolist/tui/tui"
+	"ssh-multitodolist/data"
+	"ssh-multitodolist/tui/root"
 	"syscall"
 	"time"
 
@@ -77,7 +77,7 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	if err != nil {
 		return nil, nil
 	}
-	m := tui.New(s.User(), r, renderer)
+	m := root.New(s.User(), r, renderer)
 
 	return m, []tea.ProgramOption{tea.WithAltScreen()}
 }

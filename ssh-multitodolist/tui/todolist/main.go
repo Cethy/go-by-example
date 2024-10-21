@@ -4,26 +4,26 @@ import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"ssh-multitodolist/tui/data"
+	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/input"
 	"ssh-multitodolist/tui/statusBar"
 )
 
 type Model struct {
-	ListItems      []data.ListItem
+	repository     *data.Repository
+	listIndex      int
 	Keys           KeyMap
 	Cursor         int // which to-do list item our Cursor is pointing at
 	previousCursor int // which to-do list item our Cursor is pointing at (before input is active)
 	editCursor     int
 }
 
-func New(listItems []data.ListItem) Model {
+func New(repository *data.Repository, listIndex int) Model {
 	return Model{
-		ListItems:      listItems,
-		Keys:           keys,
-		Cursor:         0,
-		previousCursor: 0,
-		editCursor:     -1,
+		repository: repository,
+		listIndex:  listIndex,
+		Keys:       keys,
+		editCursor: -1,
 	}
 }
 
@@ -31,88 +31,92 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg, isAnyInputActive bool, listIndex int) (Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case CreateEntryMsg:
-		m.ListItems = append(m.ListItems, data.ListItem{Value: msg.Value, Checked: false})
-		m.Cursor = len(m.ListItems) - 1
-		cmds = append(cmds, statusBar.NewStatusCmd("New entry added"))
+		cmds = append(cmds, data.CreateEntryCmd(listIndex, msg.Value, m.repository))
+	case data.EntryCreatedMsg:
+		m.Cursor = msg.Index
 	case CancelCreateEntryMsg:
 		m.Cursor = m.previousCursor
 		cmds = append(cmds, statusBar.NewStatusCmd("New entry cancelled"))
+
 	case UpdateEntryMsg:
-		m.ListItems[m.Cursor] = data.ListItem{Value: msg.Value, Checked: m.ListItems[m.Cursor].Checked}
+		cmds = append(cmds, data.UpdateEntryCmd(listIndex, m.Cursor, msg.Value, m.repository))
 		m.editCursor = -1
-		cmds = append(cmds, statusBar.NewStatusCmd("Entry updated"))
 	case CancelUpdateEntryMsg:
 		m.editCursor = -1
-		cmds = append(cmds, statusBar.NewStatusCmd("Entry update cancelled"))
+		cmds = append(cmds, statusBar.NewStatusCmd("Updating entry cancelled"))
+
+	case data.EntryRemovedMsg:
+		listLen := len(m.repository.Get(listIndex).Items)
+		if m.Cursor >= listLen {
+			m.Cursor = listLen - 1
+		}
+
 	case MoveItemUpMsg:
-		if msg.cursor > 0 {
-			movingUp := m.ListItems[msg.cursor]
-			m.ListItems[msg.cursor] = m.ListItems[msg.cursor-1]
-			m.ListItems[msg.cursor-1] = movingUp
-			m.Cursor = msg.cursor - 1
-			cmds = append(cmds, statusBar.NewStatusCmd("Entry moved up"))
-		}
+		cmds = append(cmds, data.MoveEntryUpCmd(listIndex, m.Cursor, m.repository))
+	case data.EntryMovedUpMsg:
+		m.Cursor = msg.Index - 1
+
 	case MoveItemDownMsg:
-		if msg.cursor < len(m.ListItems)-1 {
-			movingDown := m.ListItems[msg.cursor]
-			m.ListItems[msg.cursor] = m.ListItems[msg.cursor+1]
-			m.ListItems[msg.cursor+1] = movingDown
-			m.Cursor = msg.cursor + 1
-			cmds = append(cmds, statusBar.NewStatusCmd("Entry moved down"))
-		}
+		cmds = append(cmds, data.MoveEntryDownCmd(listIndex, m.Cursor, m.repository))
+	case data.EntryMovedDownMsg:
+		m.Cursor = msg.Index + 1
+
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.Keys.Up):
-			if m.Cursor > 0 {
-				m.Cursor--
+		if !isAnyInputActive {
+			items := m.repository.Get(listIndex).Items
+			switch {
+			case key.Matches(msg, m.Keys.Up):
+				if m.Cursor > 0 {
+					m.Cursor--
+				}
+			case key.Matches(msg, m.Keys.Down):
+				if m.Cursor < len(items)-1 {
+					m.Cursor++
+				}
+			case key.Matches(msg, m.Keys.Check):
+				if len(items) == 0 {
+					break
+				}
+				currentChecked := items[m.Cursor].Checked
+				cmds = append(cmds, data.CheckEntryCmd(listIndex, m.Cursor, !currentChecked, m.repository))
+			case key.Matches(msg, m.Keys.AddItem):
+				m.previousCursor = m.Cursor
+				m.Cursor = len(items)
+				cmds = append(cmds, input.NewFocusInputCmd("addEntryInput"))
+				cmds = append(cmds, statusBar.NewPersistingStatusCmd("Typing new entry"))
+			case key.Matches(msg, m.Keys.EditItem):
+				items := m.repository.Get(listIndex).Items
+				if len(items) == 0 {
+					break
+				}
+				m.editCursor = m.Cursor
+				cmds = append(cmds, input.NewFocusInputValueCmd("editEntryInput", items[m.Cursor].Value))
+				cmds = append(cmds, statusBar.NewPersistingStatusCmd("Editing entry"))
+			case key.Matches(msg, m.Keys.RemoveItem):
+				if len(items) == 0 {
+					break
+				}
+				cmds = append(cmds, data.RemoveEntryCmd(listIndex, m.Cursor, m.repository))
+			case key.Matches(msg, m.Keys.MoveItemUp):
+				cmds = append(cmds, MoveItemUpCmd(m.Cursor))
+			case key.Matches(msg, m.Keys.MoveItemDown):
+				cmds = append(cmds, MoveItemDownCmd(m.Cursor))
 			}
-		case key.Matches(msg, m.Keys.Down):
-			if m.Cursor < len(m.ListItems)-1 {
-				m.Cursor++
-			}
-		case key.Matches(msg, m.Keys.Check):
-			m.ListItems[m.Cursor].Checked = !m.ListItems[m.Cursor].Checked
-
-			cmds = append(cmds, statusBar.NewStatusCmd("Entry checked"))
-		case key.Matches(msg, m.Keys.AddItem):
-			cmds = append(cmds, input.NewFocusInputCmd("addEntryInput"))
-
-			m.previousCursor = m.Cursor
-			m.Cursor = len(m.ListItems)
-
-			cmds = append(cmds, statusBar.NewPersistingStatusCmd("Typing new entry"))
-		case key.Matches(msg, m.Keys.EditItem):
-			m.editCursor = m.Cursor
-			cmds = append(cmds, input.NewFocusInputValueCmd("editEntryInput", m.ListItems[m.Cursor].Value))
-			cmds = append(cmds, statusBar.NewPersistingStatusCmd("Editing entry"))
-		case key.Matches(msg, m.Keys.RemoveItem):
-			if len(m.ListItems) <= 0 {
-				break
-			}
-			m.ListItems = append(m.ListItems[:m.Cursor], m.ListItems[m.Cursor+1:]...)
-			if m.Cursor >= len(m.ListItems)-1 {
-				m.Cursor = len(m.ListItems) - 1
-			}
-
-			cmds = append(cmds, statusBar.NewStatusCmd("Entry removed"))
-		case key.Matches(msg, m.Keys.MoveItemUp):
-			cmds = append(cmds, NewMoveItemUpCmd(m.Cursor))
-		case key.Matches(msg, m.Keys.MoveItemDown):
-			cmds = append(cmds, NewMoveItemDownCmd(m.Cursor))
 		}
 	}
 
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View(editEntryRender func(t string) string) string {
+func (m Model) View(editEntryRender func(t string) string, listIndex int) string {
+	items := m.repository.Get(listIndex).Items
 	content := ""
-	for i, listItem := range m.ListItems {
+	for i, listItem := range items {
 		// Is the Cursor pointing at this choice?
 		cursor := " " // no Cursor
 		if m.Cursor == i {

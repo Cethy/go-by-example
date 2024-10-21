@@ -6,7 +6,7 @@ type Repository struct {
 }
 
 /*type Repository interface {
-	List() []NamedList
+	Items() []NamedList
 	Get(index int) NamedList
 	Create(name string) NamedList
 	Update(index int, list NamedList) NamedList
@@ -33,6 +33,9 @@ func (p *Repository) ListNames() []string {
 }
 
 func (p *Repository) Get(index int) NamedList {
+	if index < 0 || index >= len(p.data) {
+		return NamedList{}
+	}
 	return p.data[index]
 }
 func (p *Repository) GetName(index int) string {
@@ -42,7 +45,7 @@ func (p *Repository) GetName(index int) string {
 func (p *Repository) Create(name string) int {
 	newList := NamedList{name, []ListItem{}}
 	p.data = append(p.data, newList)
-	return len(p.data)
+	return len(p.data) - 1
 }
 
 func (p *Repository) Update(index int, newList NamedList) {

@@ -2,6 +2,7 @@ package tabs
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/input"
 	"ssh-multitodolist/tui/statusBar"
 	"strings"
@@ -11,20 +12,20 @@ import (
 )
 
 type Model struct {
+	repository   *data.Repository
 	renderer     *lipgloss.Renderer
 	Keys         KeyMap
-	Tabs         []string
 	EditTab      int
 	ActiveTab    int
 	focusConfirm bool
 }
 
-func New(tabs []string, renderer *lipgloss.Renderer) Model {
+func New(repository *data.Repository, renderer *lipgloss.Renderer) Model {
 	return Model{
-		renderer: renderer,
-		Keys:     keys,
-		Tabs:     tabs,
-		EditTab:  -1,
+		repository: repository,
+		renderer:   renderer,
+		Keys:       keys,
+		EditTab:    -1,
 	}
 }
 
@@ -32,50 +33,54 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg, isAnyInputActive bool) (Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case CreateEntryMsg:
-		m.Tabs = append(m.Tabs, msg.Value)
-		m.ActiveTab = len(m.Tabs) - 1
-	case UpdateEntryMsg:
-		m.Tabs[m.ActiveTab] = msg.Value
-		m.EditTab = -1
-	case CancelUpdateEntryMsg:
-		m.EditTab = -1
-	case RemoveEntryMsg:
-		cmds = append(cmds, statusBar.NewStatusCmd("Confirm deleting this list ? Y/n"))
-		m.focusConfirm = true
-	case ConfirmRemoveEntryMsg:
-		m.Tabs = append(m.Tabs[:msg.Index], m.Tabs[msg.Index+1:]...)
-		if m.ActiveTab >= len(m.Tabs) {
-			m.ActiveTab = len(m.Tabs) - 1
-		}
+	case CreateListMsg:
+		cmds = append(cmds, data.CreateListCmd(msg.Value, m.repository))
+	case data.ListCreatedMsg:
+		m.ActiveTab = msg.Index
+	case CancelCreateListMsg:
+		cmds = append(cmds, statusBar.NewStatusCmd("New list cancelled"))
 
+	case UpdateListMsg:
+		cmds = append(cmds, data.UpdateListCmd(m.ActiveTab, msg.Value, m.repository))
+		m.EditTab = -1
+	case CancelUpdateListMsg:
+		m.EditTab = -1
+		cmds = append(cmds, statusBar.NewStatusCmd("Updating list cancelled"))
+
+	case ConfirmRemoveListMsg:
+		cmds = append(cmds, data.RemoveListCmd(m.ActiveTab, m.repository))
+	case data.ListRemovedMsg:
+		if m.ActiveTab >= len(m.repository.List())-1 {
+			m.ActiveTab = len(m.repository.List()) - 1
+		}
 	case tea.KeyMsg:
 		if m.focusConfirm {
 			if msg.String() == "y" || msg.String() == "Y" {
-				cmds = append(cmds, NewConfirmRemoveEntryCmd(m.ActiveTab))
+				cmds = append(cmds, ConfirmRemoveListCmd(m.ActiveTab))
+			} else {
+				cmds = append(cmds, statusBar.NewStatusCmd("Removing list cancelled"))
 			}
 			m.focusConfirm = false
-		} else {
+		} else if !isAnyInputActive {
 			switch {
 			case key.Matches(msg, m.Keys.Right):
-				m.ActiveTab = min(m.ActiveTab+1, len(m.Tabs)-1)
-				return m, nil
+				m.ActiveTab = min(m.ActiveTab+1, len(m.repository.List())-1)
 			case key.Matches(msg, m.Keys.Left):
 				m.ActiveTab = max(m.ActiveTab-1, 0)
-				return m, nil
 			case key.Matches(msg, m.Keys.AddItem):
 				cmds = append(cmds, input.NewFocusInputCmd("addListInput"))
 				cmds = append(cmds, statusBar.NewPersistingStatusCmd("Creating new list"))
 			case key.Matches(msg, m.Keys.EditItem):
 				m.EditTab = m.ActiveTab
-				cmds = append(cmds, input.NewFocusInputValueCmd("editListInput", m.Tabs[m.ActiveTab]))
+				cmds = append(cmds, input.NewFocusInputValueCmd("editListInput", m.repository.GetName(m.ActiveTab)))
 				cmds = append(cmds, statusBar.NewPersistingStatusCmd("Editing list title"))
 			case key.Matches(msg, m.Keys.RemoveItem):
-				cmds = append(cmds, NewRemoveEntryCmd(m.ActiveTab))
+				cmds = append(cmds, statusBar.NewStatusCmd("Confirm deleting this list ? Y/n"))
+				m.focusConfirm = true
 			}
 		}
 	}
@@ -87,7 +92,7 @@ func (m Model) View(extraTabs []string, editTabRender func(t string) string, wid
 	tab, activeTab, tabGap := GetStyles(m.renderer)
 
 	var tabs []string
-	for i, t := range m.Tabs {
+	for i, t := range m.repository.ListNames() {
 		if m.EditTab == i {
 			tabs = append(tabs, activeTab.Render(editTabRender(t)))
 			continue

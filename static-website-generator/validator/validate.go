@@ -1,6 +1,7 @@
-package main
+package validator
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path"
@@ -50,9 +51,8 @@ func tryFixImgSrc(projectDirName string) error {
 	return os.WriteFile(articlePath, []byte(strings.Join(lines, "\n")), 0644)
 }
 
-// ensure every article's README has the mandatory metadata set and add a random unsplash if no ImgSrc value is set
-func main() {
-	var errors []Error
+func Validate() error {
+	var myErrors []Error
 	articles := article.GetArticlesData()
 
 	for _, a := range articles {
@@ -67,11 +67,11 @@ func main() {
 			violations = append(violations, "ImgSrc is missing")
 		}
 
-		errors = append(errors, Error{a, violations})
+		myErrors = append(myErrors, Error{a, violations})
 	}
 
 	var mustFixCount int
-	for _, e := range errors {
+	for _, e := range myErrors {
 		if len(e.violations) == 0 {
 			log.Println("[OK]", e.article.ProjectDirname)
 			continue
@@ -103,8 +103,8 @@ func main() {
 
 	if mustFixCount > 0 {
 		log.Println("You have " + strconv.Itoa(mustFixCount) + " violations to fix.")
-		os.Exit(1)
+		return errors.New("You have " + strconv.Itoa(mustFixCount) + " violations to fix.")
 	}
 	log.Println("All is well ...")
-	os.Exit(0)
+	return nil
 }

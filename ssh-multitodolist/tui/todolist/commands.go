@@ -6,7 +6,7 @@ type CreateEntryMsg struct {
 	Value string
 }
 
-func NewCreateEntryCmd(value string) tea.Cmd {
+func CreateEntryCmd(value string) tea.Cmd {
 	return func() tea.Msg {
 		return CreateEntryMsg{Value: value}
 	}
@@ -14,7 +14,7 @@ func NewCreateEntryCmd(value string) tea.Cmd {
 
 type CancelCreateEntryMsg struct{}
 
-func NewCancelCreateEntryCmd() tea.Cmd {
+func CancelCreateEntryCmd() tea.Cmd {
 	return func() tea.Msg {
 		return CancelCreateEntryMsg{}
 	}
@@ -24,7 +24,7 @@ type UpdateEntryMsg struct {
 	Value string
 }
 
-func NewUpdateEntryCmd(value string) tea.Cmd {
+func UpdateEntryCmd(value string) tea.Cmd {
 	return func() tea.Msg {
 		return UpdateEntryMsg{Value: value}
 	}
@@ -32,7 +32,7 @@ func NewUpdateEntryCmd(value string) tea.Cmd {
 
 type CancelUpdateEntryMsg struct{}
 
-func NewCancelUpdateEntryCmd() tea.Cmd {
+func CancelUpdateEntryCmd() tea.Cmd {
 	return func() tea.Msg {
 		return CancelUpdateEntryMsg{}
 	}
@@ -42,7 +42,7 @@ type MoveItemUpMsg struct {
 	cursor int
 }
 
-func NewMoveItemUpCmd(cursor int) tea.Cmd {
+func MoveItemUpCmd(cursor int) tea.Cmd {
 	return func() tea.Msg {
 		return MoveItemUpMsg{cursor}
 	}
@@ -52,7 +52,7 @@ type MoveItemDownMsg struct {
 	cursor int
 }
 
-func NewMoveItemDownCmd(cursor int) tea.Cmd {
+func MoveItemDownCmd(cursor int) tea.Cmd {
 	return func() tea.Msg {
 		return MoveItemDownMsg{cursor}
 	}

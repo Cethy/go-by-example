@@ -45,6 +45,7 @@ func main() {
 		wish.WithHostKeyPath(".ssh/id_ed25519"),
 		wish.WithMiddleware(
 			teaMiddleware(r, a),
+			clearAppMiddleware(a),
 			activeterm.Middleware(),
 			logging.Middleware(),
 		),
@@ -72,7 +73,16 @@ func main() {
 	}
 }
 
-func teaMiddleware(r *data.Repository, app *app.App) wish.Middleware {
+func clearAppMiddleware(a *app.App) wish.Middleware {
+	return func(next ssh.Handler) ssh.Handler {
+		return func(sess ssh.Session) {
+			next(sess)
+			a.RemoveUser(sess.User())
+		}
+	}
+}
+
+func teaMiddleware(r *data.Repository, a *app.App) wish.Middleware {
 	teaHandler := func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 		_, _, active := s.Pty()
 		if !active {
@@ -83,7 +93,7 @@ func teaMiddleware(r *data.Repository, app *app.App) wish.Middleware {
 		// biggest gotcha working with bubbletea and ssh D:
 		renderer := bubbletea.MakeRenderer(s)
 
-		m := root.New(s.User(), r, renderer)
+		m := root.New(s.User(), a, r, renderer)
 
 		return m, []tea.ProgramOption{tea.WithAltScreen()}
 	}
@@ -94,7 +104,7 @@ func teaMiddleware(r *data.Repository, app *app.App) wish.Middleware {
 		}
 
 		p := tea.NewProgram(m, append(bubbletea.MakeOptions(s), opts...)...)
-		app.Programs = append(app.Programs, p)
+		a.AddUser(p, s.User())
 
 		return p
 	}

@@ -5,6 +5,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"log"
+	"ssh-multitodolist/app"
 	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/help"
 	"ssh-multitodolist/tui/input"
@@ -17,6 +18,7 @@ import (
 
 // Model main Model
 type Model struct {
+	app            *app.App
 	repository     *data.Repository
 	renderer       *lipgloss.Renderer
 	tabs           tabs.Model
@@ -33,10 +35,11 @@ type Model struct {
 	width, height int
 }
 
-func New(username string, repository *data.Repository, renderer *lipgloss.Renderer) Model {
+func New(username string, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer) Model {
 	todolistUI := todolist.New(repository, 0)
 
 	return Model{
+		app:        application,
 		repository: repository,
 		renderer:   renderer,
 		tabs:       tabs.New(repository, renderer),
@@ -172,16 +175,29 @@ func (m Model) View() string {
 	header := m.viewHeader()
 	helpView := m.viewHelp()
 	statusBarView := m.viewStatusBar()
+	log.Println("len(m.app.Users)", len(m.app.Users))
+	connectedUsers := "Connected users: "
+	for i, u := range m.app.Users {
+		log.Println(u.Username)
+		connectedUsers += u.Username
+		if i < len(m.app.Users)-1 {
+			connectedUsers += ", "
+		}
+	}
 
-	outsideContentHeight := lipgloss.Height(header) + lipgloss.Height(helpView) + lipgloss.Height(statusBarView)
+	outsideContentHeight := lipgloss.Height(header) +
+		lipgloss.Height(helpView) +
+		lipgloss.Height(statusBarView) +
+		lipgloss.Height(connectedUsers)
 
 	addItemInputView := ""
 	if m.addEntryInput.Active {
 		addItemInputView = m.addEntryInput.View()
 	}
+
 	content := m.viewport.View(m.todolist.View(func(t string) string {
 		return m.editEntryInput.View()
 	}, m.tabs.ActiveTab)+addItemInputView, m.width, m.height-outsideContentHeight, m.todolist.Cursor)
 
-	return lipgloss.JoinVertical(lipgloss.Top, header, content, helpView, statusBarView)
+	return lipgloss.JoinVertical(lipgloss.Top, header, content, helpView, connectedUsers, statusBarView)
 }

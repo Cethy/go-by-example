@@ -175,11 +175,12 @@ func (m Model) View() string {
 	header := m.viewHeader()
 	helpView := m.viewHelp()
 	statusBarView := m.viewStatusBar()
-	log.Println("len(m.app.Users)", len(m.app.Users))
+
 	connectedUsers := "Connected users: "
 	for i, u := range m.app.Users {
-		log.Println(u.Username)
-		connectedUsers += u.Username
+		connectedUsers += m.renderer.NewStyle().
+			Foreground(lipgloss.Color(u.Color)).
+			Render(u.Username)
 		if i < len(m.app.Users)-1 {
 			connectedUsers += ", "
 		}

@@ -2,7 +2,9 @@ package app
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"math/rand"
 	"slices"
+	"strconv"
 )
 
 // Shared state of the application
@@ -10,14 +12,27 @@ import (
 type User struct {
 	Program  *tea.Program
 	Username string
+	Color    string
 }
 
 type App struct {
 	Users []*User
 }
 
+func randomColor(alreadyUsedColors []string) string {
+	color := strconv.Itoa(rand.Intn(256))
+	if slices.Contains(alreadyUsedColors, color) {
+		return randomColor(alreadyUsedColors)
+	}
+	return color
+}
+
 func (a *App) AddUser(program *tea.Program, username string) {
-	a.Users = append(a.Users, &User{Program: program, Username: username})
+	a.Users = append(a.Users, &User{
+		Program:  program,
+		Username: username,
+		Color:    randomColor([]string{}),
+	})
 
 	a.Notify(UserListUpdatedMsg{})
 }

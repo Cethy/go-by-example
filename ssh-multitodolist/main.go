@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"github.com/charmbracelet/wish/activeterm"
+	"github.com/muesli/termenv"
 	"net"
 	"os"
 	"os/signal"
+	"ssh-multitodolist/app"
 	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/root"
 	"syscall"
@@ -30,11 +32,19 @@ func main() {
 		port = os.Getenv("PORT")
 	}
 
+	a := &app.App{}
+
+	r := data.New("./TODO.md", a.NotifyNewData)
+	err := r.Init()
+	if err != nil {
+		panic(err)
+	}
+
 	s, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, port)),
 		wish.WithHostKeyPath(".ssh/id_ed25519"),
 		wish.WithMiddleware(
-			bubbletea.Middleware(teaHandler),
+			teaMiddleware(r, a),
 			activeterm.Middleware(),
 			logging.Middleware(),
 		),
@@ -62,22 +72,32 @@ func main() {
 	}
 }
 
-func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
-	_, _, active := s.Pty()
-	if !active {
-		wish.Fatalln(s, "no active terminal, skipping")
-		return nil, nil
+func teaMiddleware(r *data.Repository, app *app.App) wish.Middleware {
+	teaHandler := func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
+		_, _, active := s.Pty()
+		if !active {
+			wish.Fatalln(s, "no active terminal, skipping")
+			return nil, nil
+		}
+
+		// biggest gotcha working with bubbletea and ssh D:
+		renderer := bubbletea.MakeRenderer(s)
+
+		m := root.New(s.User(), r, renderer)
+
+		return m, []tea.ProgramOption{tea.WithAltScreen()}
+	}
+	programHandler := func(s ssh.Session) *tea.Program {
+		m, opts := teaHandler(s)
+		if m == nil {
+			return nil
+		}
+
+		p := tea.NewProgram(m, append(bubbletea.MakeOptions(s), opts...)...)
+		app.Programs = append(app.Programs, p)
+
+		return p
 	}
 
-	// biggest gotcha working with bubbletea and ssh D:
-	renderer := bubbletea.MakeRenderer(s)
-
-	r := data.NewRepository("./TODO.md")
-	err := r.Init()
-	if err != nil {
-		return nil, nil
-	}
-	m := root.New(s.User(), r, renderer)
-
-	return m, []tea.ProgramOption{tea.WithAltScreen()}
+	return bubbletea.MiddlewareWithProgramHandler(programHandler, termenv.ANSI256)
 }

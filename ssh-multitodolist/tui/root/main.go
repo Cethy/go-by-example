@@ -73,8 +73,6 @@ func New(username string, repository *data.Repository, renderer *lipgloss.Render
 }
 
 func (m Model) Init() tea.Cmd {
-	// @todo handle error
-	m.repository.Init()
 	return statusBar.NewStatusCmd(m.statusBar.DefaultValue)
 }
 

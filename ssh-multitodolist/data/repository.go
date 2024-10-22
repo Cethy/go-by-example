@@ -1,8 +1,9 @@
 package data
 
 type Repository struct {
-	sourcePath string
-	data       []NamedList
+	sourcePath     string
+	data           []NamedList
+	notifyOnCommit func()
 }
 
 /*type Repository interface {
@@ -15,9 +16,8 @@ type Repository struct {
 	Commit() error
 }*/
 
-func NewRepository(sourcePath string) *Repository {
-	p := &Repository{sourcePath, []NamedList{}}
-	return p
+func New(sourcePath string, notifyOnCommit func()) *Repository {
+	return &Repository{sourcePath, []NamedList{}, notifyOnCommit}
 }
 
 func (p *Repository) List() []NamedList {
@@ -45,18 +45,22 @@ func (p *Repository) GetName(index int) string {
 func (p *Repository) Create(name string) int {
 	newList := NamedList{name, []ListItem{}}
 	p.data = append(p.data, newList)
+	p.Commit()
 	return len(p.data) - 1
 }
 
 func (p *Repository) Update(index int, newList NamedList) {
 	p.data[index] = newList
+	p.Commit()
 }
 func (p *Repository) UpdateName(index int, newName string) {
 	p.data[index].Name = newName
+	p.Commit()
 }
 
 func (p *Repository) Delete(index int) {
 	p.data = append(p.data[:index], p.data[index+1:]...)
+	p.Commit()
 }
 
 func (p *Repository) Init() error {
@@ -66,5 +70,7 @@ func (p *Repository) Init() error {
 }
 
 func (p *Repository) Commit() error {
-	return WriteData(p.data, p.sourcePath)
+	err := WriteData(p.data, p.sourcePath)
+	p.notifyOnCommit()
+	return err
 }

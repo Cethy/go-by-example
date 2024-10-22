@@ -16,7 +16,8 @@ and make it reachable via ssh
 
 ## TODO
 
-- [ ] multiplayer (other's people cursors & share data)
+- [x] instant data share
+- [ ] other connections current positions (selected tab & cursor)
 - [ ] sidebar chat ([example](https://github.com/charmbracelet/wish/blob/main/examples/multichat/main.go))
 - [ ] authentication
 - [ ] new todo by url

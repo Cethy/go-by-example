@@ -4,6 +4,7 @@ type Repository struct {
 	sourcePath     string
 	data           []NamedList
 	notifyOnCommit func()
+	notifyOnRemove func()
 }
 
 /*type Repository interface {
@@ -16,8 +17,8 @@ type Repository struct {
 	Commit() error
 }*/
 
-func New(sourcePath string, notifyOnCommit func()) *Repository {
-	return &Repository{sourcePath, []NamedList{}, notifyOnCommit}
+func New(sourcePath string, notifyOnCommit func(), notifyOnRemove func()) *Repository {
+	return &Repository{sourcePath, []NamedList{}, notifyOnCommit, notifyOnRemove}
 }
 
 func (p *Repository) List() []NamedList {
@@ -61,6 +62,7 @@ func (p *Repository) UpdateName(index int, newName string) {
 func (p *Repository) Delete(index int) {
 	p.data = append(p.data[:index], p.data[index+1:]...)
 	p.Commit()
+	p.notifyOnRemove()
 }
 
 func (p *Repository) Init() error {

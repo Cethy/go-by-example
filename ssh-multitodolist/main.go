@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/charmbracelet/wish/activeterm"
 	"github.com/muesli/termenv"
 	"net"
@@ -32,9 +33,9 @@ func main() {
 		port = os.Getenv("PORT")
 	}
 
-	a := &app.App{}
+	a := app.New()
 
-	r := data.New("./TODO.md", a.NotifyNewData)
+	r := data.New("./TODO.md", a.NotifyNewData, a.NotifyListRemoved)
 	err := r.Init()
 	if err != nil {
 		panic(err)
@@ -43,9 +44,12 @@ func main() {
 	s, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, port)),
 		wish.WithHostKeyPath(".ssh/id_ed25519"),
+
+		// app
 		wish.WithMiddleware(
 			teaMiddleware(r, a),
-			clearAppMiddleware(a),
+			removeDisconnectedUsersMiddleware(a),
+			usernameAlreadyUsedMiddleware(a),
 			activeterm.Middleware(),
 			logging.Middleware(),
 		),
@@ -73,7 +77,20 @@ func main() {
 	}
 }
 
-func clearAppMiddleware(a *app.App) wish.Middleware {
+// will exit connections if username is already used on some other connection
+func usernameAlreadyUsedMiddleware(a *app.App) wish.Middleware {
+	return func(next ssh.Handler) ssh.Handler {
+		return func(s ssh.Session) {
+			if a.Users[s.User()] == nil {
+				next(s)
+			}
+			fmt.Fprintln(s, "Username \""+s.User()+"\" is already used.")
+			s.Exit(1)
+		}
+	}
+}
+
+func removeDisconnectedUsersMiddleware(a *app.App) wish.Middleware {
 	return func(next ssh.Handler) ssh.Handler {
 		return func(sess ssh.Session) {
 			next(sess)
@@ -82,29 +99,23 @@ func clearAppMiddleware(a *app.App) wish.Middleware {
 	}
 }
 
-func teaMiddleware(r *data.Repository, a *app.App) wish.Middleware {
-	teaHandler := func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
+func teaMiddleware(repository *data.Repository, application *app.App) wish.Middleware {
+	programHandler := func(s ssh.Session) *tea.Program {
 		_, _, active := s.Pty()
 		if !active {
 			wish.Fatalln(s, "no active terminal, skipping")
-			return nil, nil
-		}
-
-		// biggest gotcha working with bubbletea and ssh D:
-		renderer := bubbletea.MakeRenderer(s)
-
-		m := root.New(s.User(), a, r, renderer)
-
-		return m, []tea.ProgramOption{tea.WithAltScreen()}
-	}
-	programHandler := func(s ssh.Session) *tea.Program {
-		m, opts := teaHandler(s)
-		if m == nil {
 			return nil
 		}
 
-		p := tea.NewProgram(m, append(bubbletea.MakeOptions(s), opts...)...)
-		a.AddUser(p, s.User())
+		var (
+			state    = application.NewState(s.User())
+			renderer = bubbletea.MakeRenderer(s) // biggest gotcha working with bubbletea and ssh D:
+		)
+
+		model := root.New(state, application, repository, renderer)
+
+		p := tea.NewProgram(model, append(bubbletea.MakeOptions(s), tea.WithAltScreen())...)
+		application.AddUser(p, state)
 
 		return p
 	}

@@ -38,6 +38,11 @@ type ListRemovedMsg struct {
 }
 
 func RemoveListCmd(index int, r *Repository) tea.Cmd {
+	// keep one list at all time
+	if len(r.List()) <= 1 {
+		return nil
+	}
+
 	r.Delete(index)
 	return func() tea.Msg {
 		return ListRemovedMsg{ListMsg: ListMsg{Index: index}}

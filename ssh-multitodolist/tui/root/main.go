@@ -18,6 +18,7 @@ import (
 
 // Model main Model
 type Model struct {
+	state          *app.State
 	app            *app.App
 	repository     *data.Repository
 	renderer       *lipgloss.Renderer
@@ -35,17 +36,18 @@ type Model struct {
 	width, height int
 }
 
-func New(username string, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer) Model {
+func New(state *app.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer) Model {
 	todolistUI := todolist.New(repository, 0)
 
 	return Model{
+		state:      state,
 		app:        application,
 		repository: repository,
 		renderer:   renderer,
-		tabs:       tabs.New(repository, renderer),
+		tabs:       tabs.New(state, application, repository, renderer),
 		help:       help.New(renderer),
 		keys:       keys.Keys,
-		statusBar:  statusBar.New(username, renderer),
+		statusBar:  statusBar.New(state.Username, renderer),
 		todolist:   todolistUI,
 		viewport:   viewport.New(),
 		addEntryInput: input.New(
@@ -125,7 +127,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m.tabs, cmd = m.tabs.Update(msg, m.isAnyInputActive())
 	cmds = append(cmds, cmd)
-	m.todolist, cmd = m.todolist.Update(msg, m.isAnyInputActive(), m.tabs.ActiveTab)
+	m.todolist, cmd = m.todolist.Update(msg, m.isAnyInputActive(), m.state.GetActiveTab())
 	cmds = append(cmds, cmd)
 	m.statusBar, cmd = m.statusBar.Update(msg)
 	cmds = append(cmds, cmd)
@@ -177,10 +179,10 @@ func (m Model) View() string {
 	statusBarView := m.viewStatusBar()
 
 	connectedUsers := "Connected users: "
-	for i, u := range m.app.Users {
+	for i, s := range m.app.StatesSorted() {
 		connectedUsers += m.renderer.NewStyle().
-			Foreground(lipgloss.Color(u.Color)).
-			Render(u.Username)
+			Foreground(lipgloss.Color(s.Color)).
+			Render(s.Username)
 		if i < len(m.app.Users)-1 {
 			connectedUsers += ", "
 		}
@@ -198,7 +200,7 @@ func (m Model) View() string {
 
 	content := m.viewport.View(m.todolist.View(func(t string) string {
 		return m.editEntryInput.View()
-	}, m.tabs.ActiveTab)+addItemInputView, m.width, m.height-outsideContentHeight, m.todolist.Cursor)
+	}, m.state.GetActiveTab())+addItemInputView, m.width, m.height-outsideContentHeight, m.todolist.Cursor)
 
 	return lipgloss.JoinVertical(lipgloss.Top, header, content, helpView, connectedUsers, statusBarView)
 }

@@ -131,8 +131,9 @@ func (m Model) getUpTo2Cursors(index int) [2]string {
 			cursors[cpt] = m.renderer.NewStyle().
 				Foreground(lipgloss.Color(s.Color)).
 				Render(">")
+			cpt++
 		}
-		cpt++
+
 		if cpt >= 2 {
 			break
 		}

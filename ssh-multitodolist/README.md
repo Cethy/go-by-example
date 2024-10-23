@@ -14,11 +14,29 @@ and make it reachable via ssh
 
 ![Made with VHS](./demo.gif)
 
+## Key Features
+
+- multi-user ssh server
+- instant data sharing
+- see what the other users do
+- standalone mode
+
+## Usage
+
+```shell
+# ssh server
+go run main.go server [--port=23234]
+
+# standalone
+go run main.go standalone
+```
+
+
 ## TODO
 
-- [x] instant data share
-- [ ] other connections current positions (selected tab & cursor)
 - [ ] sidebar chat ([example](https://github.com/charmbracelet/wish/blob/main/examples/multichat/main.go))
 - [ ] authentication
 - [ ] new todo by url
 - [ ] https landing page (go to ssh...)
+- [ ] redis repository
+- [ ] source filename flag

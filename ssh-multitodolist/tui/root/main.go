@@ -54,7 +54,7 @@ func New(state *app.State, application *app.App, repository *data.Repository, re
 			"addEntryInput",
 			todolist.CreateEntryCmd,
 			todolist.CancelCreateEntryCmd,
-			input.NewInput("new entry", "  [ ] ", renderer),
+			input.NewInput("new entry", "    [ ] ", renderer),
 		),
 		editEntryInput: input.New(
 			"editEntryInput",

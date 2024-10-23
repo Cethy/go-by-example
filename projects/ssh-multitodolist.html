@@ -41,14 +41,28 @@
 <p class="">Build upon previous <a href="./cli-multitodolist.html" class="text-blue-600 hover:underline focus:border-blue-400 active:bg-blue-600 visited:text-purple-600">Multi todo list project</a>
 and make it reachable via ssh</p>
 <p class=""><img src="./demo.gif" alt="Made with VHS" class=""></p>
+<h2 class="text-2xl font-bold">Key Features</h2>
+<ul class="list-disc list-outside md:list-inside">
+<li class="">multi-user ssh server</li>
+<li class="">instant data sharing</li>
+<li class="">see what the other users do</li>
+<li class="">standalone mode</li>
+</ul>
+<h2 class="text-2xl font-bold">Usage</h2>
+<pre><code class="language-shell"># ssh server
+go run main.go server [--port=23234]
+
+# standalone
+go run main.go standalone
+</code></pre>
 <h2 class="text-2xl font-bold">TODO</h2>
 <ul class="list-disc list-outside md:list-inside">
-<li class="">[x] instant data share</li>
-<li class="">[ ] other connections current positions (selected tab &amp; cursor)</li>
 <li class="">[ ] sidebar chat (<a href="https://github.com/charmbracelet/wish/blob/main/examples/multichat/main.go" class="text-blue-600 hover:underline focus:border-blue-400 active:bg-blue-600 visited:text-purple-600">example</a>)</li>
 <li class="">[ ] authentication</li>
 <li class="">[ ] new todo by url</li>
 <li class="">[ ] https landing page (go to ssh...)</li>
+<li class="">[ ] redis repository</li>
+<li class="">[ ] source filename flag</li>
 </ul>
 
 

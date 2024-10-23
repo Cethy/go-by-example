@@ -37,7 +37,7 @@ type Model struct {
 }
 
 func New(state *app.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer) Model {
-	todolistUI := todolist.New(repository, 0)
+	todolistUI := todolist.New(state, application, repository, renderer, 0)
 
 	return Model{
 		state:      state,
@@ -178,14 +178,14 @@ func (m Model) View() string {
 	helpView := m.viewHelp()
 	statusBarView := m.viewStatusBar()
 
-	connectedUsers := "Connected users: "
-	for i, s := range m.app.StatesSorted() {
-		connectedUsers += m.renderer.NewStyle().
+	connectedUsers := "Connected users: " + m.state.Username
+	for _, s := range m.app.StatesSorted() {
+		if s.Username == m.state.Username {
+			continue
+		}
+		connectedUsers += ", " + m.renderer.NewStyle().
 			Foreground(lipgloss.Color(s.Color)).
 			Render(s.Username)
-		if i < len(m.app.Users)-1 {
-			connectedUsers += ", "
-		}
 	}
 
 	outsideContentHeight := lipgloss.Height(header) +
@@ -200,7 +200,7 @@ func (m Model) View() string {
 
 	content := m.viewport.View(m.todolist.View(func(t string) string {
 		return m.editEntryInput.View()
-	}, m.state.GetActiveTab())+addItemInputView, m.width, m.height-outsideContentHeight, m.todolist.Cursor)
+	}, m.state.GetActiveTab())+addItemInputView, m.width, m.height-outsideContentHeight, m.state.GetCursor())
 
 	return lipgloss.JoinVertical(lipgloss.Top, header, content, helpView, connectedUsers, statusBarView)
 }

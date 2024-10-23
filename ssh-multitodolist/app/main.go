@@ -11,12 +11,15 @@ import (
 // Shared state of the application
 
 type State struct {
-	Username    string
-	Color       string
-	editTab     int
-	activeTab   int
-	removingTab int
-	notify      func()
+	Username       string
+	Color          string
+	editTab        int
+	activeTab      int
+	removingTab    int
+	cursor         int // which to-do list item our Cursor is pointing at
+	previousCursor int // which to-do list item our Cursor is pointing at (before input is active)
+	editCursor     int
+	notify         func()
 }
 
 func (s *State) EditTab(v int) {
@@ -53,6 +56,40 @@ func (s *State) GetRemovingTab() int {
 	return s.removingTab
 }
 
+func (s *State) Cursor(v int) {
+	oldV := s.cursor
+	s.cursor = v
+
+	if oldV != s.cursor {
+		s.notify()
+	}
+}
+func (s *State) GetCursor() int {
+	return s.cursor
+}
+func (s *State) PreviousCursor(v int) {
+	oldV := s.previousCursor
+	s.previousCursor = v
+
+	if oldV != s.previousCursor {
+		s.notify()
+	}
+}
+func (s *State) GetPreviousCursor() int {
+	return s.previousCursor
+}
+func (s *State) EditCursor(v int) {
+	oldV := s.editCursor
+	s.editCursor = v
+
+	if oldV != s.editCursor {
+		s.notify()
+	}
+}
+func (s *State) GetEditCursor() int {
+	return s.editCursor
+}
+
 type User struct {
 	Program *tea.Program
 	State   *State
@@ -74,6 +111,7 @@ func (a *App) NewState(username string) *State {
 		Color:       randomColor([]string{}),
 		editTab:     -1,
 		removingTab: -1,
+		editCursor:  -1,
 		notify:      a.NotifyUserPositionUpdated,
 	}
 }

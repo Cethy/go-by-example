@@ -31,7 +31,6 @@ go run main.go server [--port=23234]
 go run main.go standalone
 ```
 
-
 ## TODO
 
 - [ ] sidebar chat ([example](https://github.com/charmbracelet/wish/blob/main/examples/multichat/main.go))
@@ -40,3 +39,8 @@ go run main.go standalone
 - [ ] https landing page (go to ssh...)
 - [ ] redis repository
 - [ ] source filename flag
+- [ ] header viewport
+- [ ] shift-enter behavior (submit and open input again)
+- [ ] refactor with lipgloss.SetDefaultRenderer() ?
+- [ ] migrate to bubbletea v2
+- [ ] better help grouping

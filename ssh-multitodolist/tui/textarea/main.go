@@ -5,10 +5,13 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"ssh-multitodolist/tui/input"
 )
 
+// textarea use input commands and keys
+
 type Model struct {
-	Keys               KeyMap
+	Keys               input.KeyMap
 	input              textarea.Model
 	Active             bool
 	getConfirmInputCmd func(value string) tea.Cmd
@@ -26,12 +29,12 @@ func NewInputProperlyRendered(r *lipgloss.Renderer) textarea.Model {
 	return ta
 }
 
-func NewInput(placeholder, prompt string, width, height, charLimit int, r *lipgloss.Renderer) textarea.Model {
+func NewInput(placeholder, prompt string, height, charLimit int, r *lipgloss.Renderer) textarea.Model {
 	ta := NewInputProperlyRendered(r)
 	ta.Placeholder = placeholder
 
 	ta.CharLimit = charLimit
-	ta.SetWidth(width)
+	//ta.SetWidth(width)
 	ta.SetHeight(height)
 	ta.Prompt = ta.Prompt + prompt
 	ta.ShowLineNumbers = false
@@ -39,10 +42,10 @@ func NewInput(placeholder, prompt string, width, height, charLimit int, r *lipgl
 	return ta
 }
 
-func New(id string, getConfirmInputCmd func(value string) tea.Cmd, getCancelInputCmd func() tea.Cmd, input textarea.Model) Model {
+func New(id string, getConfirmInputCmd func(value string) tea.Cmd, getCancelInputCmd func() tea.Cmd, i textarea.Model) Model {
 	return Model{
-		Keys:               keys,
-		input:              input,
+		Keys:               input.Keys,
+		input:              i,
 		Active:             false,
 		getConfirmInputCmd: getConfirmInputCmd,
 		getCancelInputCmd:  getCancelInputCmd,
@@ -59,10 +62,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
-	case FocusInputMsg:
-		if m.id == msg.id {
+	case input.FocusInputMsg:
+		if m.id == msg.Id {
 			m.Active = true
-			m.input.SetValue(msg.value)
+			m.input.SetValue(msg.Value)
 			m.input.Focus()
 		}
 	case tea.KeyMsg:
@@ -88,7 +91,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View() string {
+func (m Model) View(width int) string {
+	m.input.SetWidth(width)
 	return m.input.View()
 }
 

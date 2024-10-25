@@ -33,7 +33,8 @@ go run main.go standalone
 
 ## TODO
 
-- [ ] sidebar chat ([example](https://github.com/charmbracelet/wish/blob/main/examples/multichat/main.go))
+- [x] sidebar chat ([example](https://github.com/charmbracelet/wish/blob/main/examples/multichat/main.go))
+- [ ] disable chat & "connected users" UI in standalone mode 
 - [ ] authentication
 - [ ] new todo by url
 - [ ] https landing page (go to ssh...)

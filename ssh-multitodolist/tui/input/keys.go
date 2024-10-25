@@ -7,7 +7,7 @@ type KeyMap struct {
 	Cancel key.Binding
 }
 
-var keys = KeyMap{
+var Keys = KeyMap{
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "valid new entry"),

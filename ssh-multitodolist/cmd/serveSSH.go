@@ -36,7 +36,7 @@ var serveSSHCmd = &cobra.Command{
 			port = os.Getenv("PORT")
 		}
 
-		a := app.New()
+		a := app.New("Welcome to the chat! 👋")
 
 		r := data.New("./TODO.md", a.NotifyNewData, a.NotifyListRemoved)
 		err := r.Init()

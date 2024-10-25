@@ -1,46 +1,28 @@
 package chat
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/reflow/wrap"
+	"ssh-multitodolist/app"
+	"ssh-multitodolist/tui/input"
+	"ssh-multitodolist/tui/statusBar"
+	"strings"
 )
 
-// /
-type ChatMessage struct {
-	Message string
-	Author  string
-	Color   string
-}
-
-var chatMessages = []ChatMessage{
-	{Message: "foo", Author: "Foo", Color: "12"},
-	{Message: "BAR!", Author: "Bar", Color: "128"},
-	{Message: "FOO!!", Author: "Foo", Color: "12"},
-	{Message: "BAR!!!", Author: "Bar", Color: "128"},
-	{Message: "WAZZAAAA 🤪", Author: "Baz", Color: "77"},
-	{Message: "...", Author: "Foo", Color: "12"},
-	{Message: "...", Author: "Bar", Color: "128"},
-	{
-		Message: "I am the bread of life. He who comes to me will never go hungry, and he who believes in me will never be thirsty. But as I told you, you have seen me, and yet you do not believe. All that the Father gives me will come to me, and whoever comes to me I will never drive away. For I have come down from heaven not to do my own will but to do the will of him who sent me. And this is the will of him who sent me, that I shall lose none of all those he has given me, but raise them up at the last day. For my Father’s will is that everyone who sees the Son and believes in him may have eternal life, and I will raise them up at the last day.",
-		Author:  "Jesus✝",
-		Color:   "222",
-	},
-	{Message: "🙏", Author: "Foo", Color: "12"},
-	{Message: "🙏", Author: "Bar", Color: "128"},
-	{Message: "🙏", Author: "Baz", Color: "77"},
-}
-
-///
-
 type Model struct {
+	state    *app.State
+	app      *app.App
 	renderer *lipgloss.Renderer
 	Keys     KeyMap
 }
 
-func New(r *lipgloss.Renderer) Model {
+func New(s *app.State, a *app.App, r *lipgloss.Renderer) Model {
 	return Model{
+		state:    s,
+		app:      a,
 		renderer: r,
 		Keys:     keys,
 	}
@@ -50,7 +32,26 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 func (m Model) Update(msg tea.Msg, isAnyInputActive bool) (Model, tea.Cmd) {
-	return m, nil
+	var cmds []tea.Cmd
+
+	switch msg := msg.(type) {
+	case AddMessageMsg:
+		m.app.AddChatMessage(msg.Message, m.state.Username, m.state.Color)
+		cmds = append(cmds, statusBar.NewStatusCmd("Message sent"))
+
+	case CancelAddMessageMsg:
+		cmds = append(cmds, statusBar.NewStatusCmd("Message cancelled"))
+	case tea.KeyMsg:
+		if !isAnyInputActive {
+			switch {
+			case key.Matches(msg, m.Keys.AddMessage):
+				cmds = append(cmds, input.NewFocusInputCmd("newChatMessageInput"))
+				cmds = append(cmds, statusBar.NewPersistingStatusCmd("Typing message"))
+			}
+		}
+	}
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View(newChatMessageRender func() string, width, height int) string {
@@ -69,21 +70,30 @@ func (m Model) View(newChatMessageRender func() string, width, height int) strin
 	textinput := newChatMessageRender()
 
 	conversation := ""
-	for _, msg := range chatMessages {
+	for _, msg := range m.app.GetChatMessages() {
+		author := ""
+		if msg.Author != "" {
+			author += m.renderer.NewStyle().
+				Foreground(lipgloss.Color(msg.Color)).
+				Render(msg.Author) + ": "
+		}
 		conversation = lipgloss.JoinVertical(
 			lipgloss.Top,
 			conversation,
-			m.renderer.NewStyle().
-				Foreground(lipgloss.Color(msg.Color)).
-				Render(msg.Author)+": "+msg.Message,
+			author+msg.Message,
 		)
 	}
 
+	conversationHeightAvailable := max(height-lipgloss.Height(textinput)-lipgloss.Height(title)-3, 0)
+
 	wrapped := wrap.String(wordwrap.String(conversation, width-1), width-1)
+	split := strings.Split(wrapped, "\n")
+
+	rendered := split[max(len(split)-conversationHeightAvailable, 0):]
 
 	conversation = m.renderer.NewStyle().
 		Height(height - lipgloss.Height(textinput) - lipgloss.Height(title) - 1).
-		Render(wrapped)
+		Render("\n" + strings.Join(rendered, "\n"))
 
 	return containerStyle.Render(lipgloss.JoinVertical(lipgloss.Top, title, conversation, textinput))
 }

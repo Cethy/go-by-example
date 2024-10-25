@@ -18,7 +18,7 @@ var standAloneCmd = &cobra.Command{
 	Short: "starts as a standalone app",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
-			application = app.New()
+			application = app.New("Welcome to the chat! 👋")
 			repository  = data.New("./TODO.md", func() {}, func() {})
 			state       = application.NewState("")
 			renderer    = lipgloss.DefaultRenderer()

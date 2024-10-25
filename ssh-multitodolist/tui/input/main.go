@@ -40,7 +40,7 @@ func NewInput(Placeholder, Prompt string, r *lipgloss.Renderer) textinput.Model 
 
 func New(id string, getConfirmInputCmd func(value string) tea.Cmd, getCancelInputCmd func() tea.Cmd, input textinput.Model) Model {
 	return Model{
-		Keys:               keys,
+		Keys:               Keys,
 		input:              input,
 		Active:             false,
 		getConfirmInputCmd: getConfirmInputCmd,
@@ -59,9 +59,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case FocusInputMsg:
-		if m.id == msg.id {
+		if m.id == msg.Id {
 			m.Active = true
-			m.input.SetValue(msg.value)
+			m.input.SetValue(msg.Value)
 		}
 	case tea.KeyMsg:
 		if m.Active {

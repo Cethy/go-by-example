@@ -2,7 +2,7 @@ package input
 
 import tea "github.com/charmbracelet/bubbletea"
 
-type FocusInputMsg struct{ id, value string }
+type FocusInputMsg struct{ Id, Value string }
 
 func NewFocusInputCmd(id string) tea.Cmd {
 	return func() tea.Msg {

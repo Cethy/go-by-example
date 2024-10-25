@@ -2,20 +2,20 @@ package chat
 
 import tea "github.com/charmbracelet/bubbletea"
 
-type CreateMessageMsg struct {
+type AddMessageMsg struct {
 	Message string
 }
 
-func CreateMessageCmd(message string) tea.Cmd {
+func AddMessageCmd(message string) tea.Cmd {
 	return func() tea.Msg {
-		return CreateMessageMsg{Message: message}
+		return AddMessageMsg{Message: message}
 	}
 }
 
-type CancelCreateMessageMsg struct{}
+type CancelAddMessageMsg struct{}
 
-func CancelCreateMessageCmd() tea.Cmd {
+func CancelAddMessageCmd() tea.Cmd {
 	return func() tea.Msg {
-		return CancelCreateMessageMsg{}
+		return CancelAddMessageMsg{}
 	}
 }

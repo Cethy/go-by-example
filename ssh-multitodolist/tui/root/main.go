@@ -7,38 +7,42 @@ import (
 	"log"
 	"ssh-multitodolist/app"
 	"ssh-multitodolist/data"
+	"ssh-multitodolist/tui/chat"
 	"ssh-multitodolist/tui/help"
 	"ssh-multitodolist/tui/input"
 	"ssh-multitodolist/tui/keys"
 	"ssh-multitodolist/tui/statusBar"
 	"ssh-multitodolist/tui/tabs"
+	"ssh-multitodolist/tui/textarea"
 	"ssh-multitodolist/tui/todolist"
 	"ssh-multitodolist/tui/viewport"
 )
 
 // Model main Model
 type Model struct {
-	state          *app.State
-	app            *app.App
-	repository     *data.Repository
-	renderer       *lipgloss.Renderer
-	tabs           tabs.Model
-	todolist       todolist.Model
-	keys           keys.KeyMap
-	help           help.Model
-	statusBar      statusBar.Model
-	viewport       viewport.Model
-	addEntryInput  input.Model
-	editEntryInput input.Model
-	addListInput   input.Model
-	editListInput  input.Model
+	state               *app.State
+	app                 *app.App
+	repository          *data.Repository
+	renderer            *lipgloss.Renderer
+	tabs                tabs.Model
+	todolist            todolist.Model
+	keys                keys.KeyMap
+	help                help.Model
+	statusBar           statusBar.Model
+	viewport            viewport.Model
+	chat                chat.Model
+	addEntryInput       input.Model
+	editEntryInput      input.Model
+	addListInput        input.Model
+	editListInput       input.Model
+	newChatMessageInput textarea.Model
 
-	width, height int
+	height         int
+	chatWidth      int
+	mainPanelWidth int
 }
 
 func New(state *app.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer) Model {
-	todolistUI := todolist.New(state, application, repository, renderer, 0)
-
 	return Model{
 		state:      state,
 		app:        application,
@@ -48,8 +52,9 @@ func New(state *app.State, application *app.App, repository *data.Repository, re
 		help:       help.New(renderer),
 		keys:       keys.Keys,
 		statusBar:  statusBar.New(state.Username, renderer),
-		todolist:   todolistUI,
+		todolist:   todolist.New(state, application, repository, renderer, 0),
 		viewport:   viewport.New(),
+		chat:       chat.New(state, application, renderer),
 		addEntryInput: input.New(
 			"addEntryInput",
 			todolist.CreateEntryCmd,
@@ -74,6 +79,13 @@ func New(state *app.State, application *app.App, repository *data.Repository, re
 			tabs.CancelUpdateListCmd,
 			input.NewInput("edit list", "", renderer),
 		),
+		newChatMessageInput: textarea.New(
+			"newChatMessageInput",
+			chat.AddMessageCmd,
+			chat.CancelAddMessageCmd,
+			textarea.NewInput("Send a message...", "", 6, 280, renderer),
+		),
+		chatWidth: 40,
 	}
 }
 
@@ -82,7 +94,11 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) isAnyInputActive() bool {
-	return m.addEntryInput.Active || m.editEntryInput.Active || m.addListInput.Active || m.editListInput.Active
+	return m.addEntryInput.Active ||
+		m.editEntryInput.Active ||
+		m.addListInput.Active ||
+		m.editListInput.Active ||
+		m.newChatMessageInput.Active
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -93,7 +109,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
+		m.mainPanelWidth = max(msg.Width-m.chatWidth, 0)
 		m.height = msg.Height
 	case tea.KeyMsg:
 		if key.Matches(msg, m.keys.ForceQuit) {
@@ -129,6 +145,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 	m.todolist, cmd = m.todolist.Update(msg, m.isAnyInputActive(), m.state.GetActiveTab())
 	cmds = append(cmds, cmd)
+	m.chat, cmd = m.chat.Update(msg, m.isAnyInputActive())
+	cmds = append(cmds, cmd)
 	m.statusBar, cmd = m.statusBar.Update(msg)
 	cmds = append(cmds, cmd)
 	m.addEntryInput, cmd = m.addEntryInput.Update(msg)
@@ -138,6 +156,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.addListInput, cmd = m.addListInput.Update(msg)
 	cmds = append(cmds, cmd)
 	m.editListInput, cmd = m.editListInput.Update(msg)
+	cmds = append(cmds, cmd)
+	m.newChatMessageInput, cmd = m.newChatMessageInput.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
@@ -150,7 +170,7 @@ func (m Model) viewHeader() string {
 	}
 
 	return m.renderer.NewStyle().
-		Width(m.width).
+		Width(m.mainPanelWidth).
 		Height(4).
 		Align(lipgloss.Left, lipgloss.Top).
 		Render(m.tabs.View(
@@ -158,7 +178,7 @@ func (m Model) viewHeader() string {
 			func(t string) string {
 				return m.editListInput.View()
 			},
-			m.width,
+			m.mainPanelWidth,
 		))
 }
 
@@ -166,18 +186,21 @@ func (m Model) viewHelp() string {
 	helpKeys := [][]key.Binding{m.keys.ShortHelp(), append(m.todolist.Keys.HelpDirection(), m.tabs.Keys.HelpDirection()...)}
 	helpKeys = append(helpKeys, m.tabs.Keys.HelpActions())
 	helpKeys = append(helpKeys, m.todolist.Keys.HelpActions()...)
+	helpKeys = append(helpKeys, m.chat.Keys.HelpActions()...)
 	return m.help.View(helpKeys)
 }
 
 func (m Model) viewStatusBar() string {
-	return m.statusBar.View(m.width)
+	return m.statusBar.View(m.mainPanelWidth + m.chatWidth)
 }
 
-func (m Model) View() string {
-	header := m.viewHeader()
-	helpView := m.viewHelp()
-	statusBarView := m.viewStatusBar()
+func (m Model) viewChat(height int) string {
+	return m.chat.View(func() string {
+		return m.newChatMessageInput.View(m.chatWidth)
+	}, m.chatWidth, height)
+}
 
+func (m Model) viewConnectedUsers() string {
 	connectedUsers := "Connected users: " + m.state.Username
 	for _, s := range m.app.StatesSorted() {
 		if s.Username == m.state.Username {
@@ -187,20 +210,51 @@ func (m Model) View() string {
 			Foreground(lipgloss.Color(s.Color)).
 			Render(s.Username)
 	}
+	return connectedUsers
+}
 
-	outsideContentHeight := lipgloss.Height(header) +
-		lipgloss.Height(helpView) +
-		lipgloss.Height(statusBarView) +
-		lipgloss.Height(connectedUsers)
-
+func (m Model) viewContent(outsideContentHeight int) string {
 	addItemInputView := ""
 	if m.addEntryInput.Active {
 		addItemInputView = m.addEntryInput.View()
 	}
 
-	content := m.viewport.View(m.todolist.View(func(t string) string {
-		return m.editEntryInput.View()
-	}, m.state.GetActiveTab())+addItemInputView, m.width, m.height-outsideContentHeight, m.state.GetCursor())
+	return m.viewport.View(
+		m.todolist.View(
+			func(t string) string {
+				return m.editEntryInput.View()
+			},
+			m.state.GetActiveTab(),
+		)+addItemInputView,
+		m.mainPanelWidth,
+		m.height-outsideContentHeight,
+		m.state.GetCursor(),
+	)
+}
 
-	return lipgloss.JoinVertical(lipgloss.Top, header, content, helpView, connectedUsers, statusBarView)
+func (m Model) View() string {
+	var (
+		tabsView           = m.viewHeader()
+		helpView           = m.viewHelp()
+		statusBarView      = m.viewStatusBar()
+		chatView           = m.viewChat(m.height - lipgloss.Height(statusBarView))
+		connectedUsersView = m.viewConnectedUsers()
+	)
+
+	outsideContentHeight := lipgloss.Height(tabsView) +
+		lipgloss.Height(helpView) +
+		lipgloss.Height(statusBarView) +
+		lipgloss.Height(connectedUsersView)
+
+	content := m.viewContent(outsideContentHeight)
+
+	return lipgloss.JoinVertical(
+		lipgloss.Top,
+		lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			lipgloss.JoinVertical(lipgloss.Top, tabsView, content, helpView, connectedUsersView),
+			chatView,
+		),
+		statusBarView,
+	)
 }

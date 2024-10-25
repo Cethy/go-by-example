@@ -90,6 +90,12 @@ func (s *State) GetEditCursor() int {
 	return s.editCursor
 }
 
+type Message struct {
+	Message string
+	Author  string
+	Color   string
+}
+
 type User struct {
 	Program *tea.Program
 	State   *State
@@ -97,11 +103,14 @@ type User struct {
 
 type App struct {
 	Users map[string]*User
+	chat  []Message
 }
 
-func New() *App {
+func New(welcomeMessage string) *App {
+
 	return &App{
 		Users: make(map[string]*User),
+		chat:  []Message{{Message: welcomeMessage}},
 	}
 }
 
@@ -143,6 +152,14 @@ func (a *App) RemoveUser(username string) {
 	delete(a.Users, username)
 
 	a.Notify(UserListUpdatedMsg{})
+}
+
+func (a *App) AddChatMessage(m, owner, color string) {
+	a.chat = append(a.chat, Message{m, owner, color})
+	a.NotifyNewData()
+}
+func (a *App) GetChatMessages() []Message {
+	return a.chat
 }
 
 // notify

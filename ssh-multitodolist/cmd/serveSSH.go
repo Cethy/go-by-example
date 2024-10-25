@@ -118,7 +118,7 @@ func applicationMiddleware(repository *data.Repository, application *app.App) wi
 			renderer = bubbletea.MakeRenderer(s) // biggest gotcha working with bubbletea and ssh D:
 		)
 
-		model := root.New(state, application, repository, renderer)
+		model := root.New(state, application, repository, renderer, false)
 
 		p := tea.NewProgram(model, append(bubbletea.MakeOptions(s), tea.WithAltScreen())...)
 		application.AddUser(p, state)

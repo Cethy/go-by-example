@@ -18,8 +18,9 @@ and make it reachable via ssh
 
 - multi-user ssh server
 - instant data sharing
-- see what the other users do
-- standalone mode
+- see what the other users do (cursor & active tab)
+- talk to other users (sidebar chat)
+- standalone mode (with multi-users UIs disabled)
 
 ## Usage
 
@@ -33,8 +34,6 @@ go run main.go standalone
 
 ## TODO
 
-- [x] sidebar chat ([example](https://github.com/charmbracelet/wish/blob/main/examples/multichat/main.go))
-- [ ] disable chat & "connected users" UI in standalone mode 
 - [ ] authentication
 - [ ] new todo by url
 - [ ] https landing page (go to ssh...)

@@ -40,7 +40,7 @@ var standAloneCmd = &cobra.Command{
 			return err
 		}
 
-		model := root.New(state, application, repository, renderer)
+		model := root.New(state, application, repository, renderer, true)
 
 		p := tea.NewProgram(model, tea.WithAltScreen())
 		if _, err := p.Run(); err != nil {

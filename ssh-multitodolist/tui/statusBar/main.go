@@ -13,9 +13,14 @@ type Model struct {
 }
 
 func New(username string, renderer *lipgloss.Renderer) Model {
+	d := "What's on your mind today ?"
+	if username != "" {
+		d = "Hi " + username + ", what's on your mind today ?"
+	}
+
 	return Model{
 		renderer:     renderer,
-		DefaultValue: "Hi " + username + ", what's on your mind today ?",
+		DefaultValue: d,
 	}
 }
 

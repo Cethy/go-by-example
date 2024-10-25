@@ -36,13 +36,18 @@ type Model struct {
 	addListInput        input.Model
 	editListInput       input.Model
 	newChatMessageInput textarea.Model
-
-	height         int
-	chatWidth      int
-	mainPanelWidth int
+	standalone          bool
+	height              int
+	chatWidth           int
+	mainPanelWidth      int
 }
 
-func New(state *app.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer) Model {
+func New(state *app.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer, standalone bool) Model {
+	chatWidth := 40
+	if standalone {
+		chatWidth = 0
+	}
+
 	return Model{
 		state:      state,
 		app:        application,
@@ -85,7 +90,8 @@ func New(state *app.State, application *app.App, repository *data.Repository, re
 			chat.CancelAddMessageCmd,
 			textarea.NewInput("Send a message...", "", 6, 280, renderer),
 		),
-		chatWidth: 40,
+		chatWidth:  chatWidth,
+		standalone: standalone,
 	}
 }
 
@@ -145,8 +151,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 	m.todolist, cmd = m.todolist.Update(msg, m.isAnyInputActive(), m.state.GetActiveTab())
 	cmds = append(cmds, cmd)
-	m.chat, cmd = m.chat.Update(msg, m.isAnyInputActive())
-	cmds = append(cmds, cmd)
 	m.statusBar, cmd = m.statusBar.Update(msg)
 	cmds = append(cmds, cmd)
 	m.addEntryInput, cmd = m.addEntryInput.Update(msg)
@@ -157,8 +161,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 	m.editListInput, cmd = m.editListInput.Update(msg)
 	cmds = append(cmds, cmd)
-	m.newChatMessageInput, cmd = m.newChatMessageInput.Update(msg)
-	cmds = append(cmds, cmd)
+	if !m.standalone {
+		m.chat, cmd = m.chat.Update(msg, m.isAnyInputActive())
+		cmds = append(cmds, cmd)
+		m.newChatMessageInput, cmd = m.newChatMessageInput.Update(msg)
+		cmds = append(cmds, cmd)
+	}
 
 	return m, tea.Batch(cmds...)
 }
@@ -186,7 +194,9 @@ func (m Model) viewHelp() string {
 	helpKeys := [][]key.Binding{m.keys.ShortHelp(), append(m.todolist.Keys.HelpDirection(), m.tabs.Keys.HelpDirection()...)}
 	helpKeys = append(helpKeys, m.tabs.Keys.HelpActions())
 	helpKeys = append(helpKeys, m.todolist.Keys.HelpActions()...)
-	helpKeys = append(helpKeys, m.chat.Keys.HelpActions()...)
+	if !m.standalone {
+		helpKeys = append(helpKeys, m.chat.Keys.HelpActions()...)
+	}
 	return m.help.View(helpKeys)
 }
 
@@ -201,6 +211,9 @@ func (m Model) viewChat(height int) string {
 }
 
 func (m Model) viewConnectedUsers() string {
+	if m.standalone {
+		return ""
+	}
 	connectedUsers := "Connected users: " + m.state.Username
 	for _, s := range m.app.StatesSorted() {
 		if s.Username == m.state.Username {

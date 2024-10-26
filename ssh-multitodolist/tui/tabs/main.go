@@ -3,6 +3,7 @@ package tabs
 import (
 	"github.com/charmbracelet/bubbles/key"
 	"ssh-multitodolist/app"
+	"ssh-multitodolist/app/state"
 	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/input"
 	"ssh-multitodolist/tui/statusBar"
@@ -13,14 +14,14 @@ import (
 )
 
 type Model struct {
-	state      *app.State
+	state      *state.State
 	app        *app.App
 	repository *data.Repository
 	renderer   *lipgloss.Renderer
 	Keys       KeyMap
 }
 
-func New(state *app.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer) Model {
+func New(state *state.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer) Model {
 	return Model{
 		state:      state,
 		app:        application,

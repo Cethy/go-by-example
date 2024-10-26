@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"log"
 	"ssh-multitodolist/app"
+	"ssh-multitodolist/app/state"
 	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/chat"
 	"ssh-multitodolist/tui/help"
@@ -20,7 +21,7 @@ import (
 
 // Model main Model
 type Model struct {
-	state               *app.State
+	state               *state.State
 	app                 *app.App
 	repository          *data.Repository
 	renderer            *lipgloss.Renderer
@@ -42,7 +43,7 @@ type Model struct {
 	mainPanelWidth      int
 }
 
-func New(state *app.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer, standalone bool) Model {
+func New(state *state.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer, standalone bool) Model {
 	chatWidth := 40
 	if standalone {
 		chatWidth = 0

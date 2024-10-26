@@ -13,12 +13,16 @@ import (
 	"github.com/charmbracelet/wish/logging"
 	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
+	"math/rand"
 	"net"
 	"os"
 	"os/signal"
+	"slices"
 	"ssh-multitodolist/app"
+	"ssh-multitodolist/app/state"
 	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/root"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -114,17 +118,25 @@ func applicationMiddleware(repository *data.Repository, application *app.App) wi
 		}
 
 		var (
-			state    = application.NewState(s.User())
-			renderer = bubbletea.MakeRenderer(s) // biggest gotcha working with bubbletea and ssh D:
+			r  = bubbletea.MakeRenderer(s) // biggest gotcha working with bubbletea and ssh D:
+			st = state.New(s.User(), randomColor([]string{}), application.NotifyUserPositionUpdated)
+			m  = root.New(st, application, repository, r, false)
+			p  = tea.NewProgram(m, append(bubbletea.MakeOptions(s), tea.WithAltScreen())...)
 		)
-
-		model := root.New(state, application, repository, renderer, false)
-
-		p := tea.NewProgram(model, append(bubbletea.MakeOptions(s), tea.WithAltScreen())...)
-		application.AddUser(p, state)
+		application.AddUser(p, st)
 
 		return p
 	}
 
 	return bubbletea.MiddlewareWithProgramHandler(programHandler, termenv.ANSI256)
+}
+
+//
+
+func randomColor(alreadyUsedColors []string) string {
+	color := strconv.Itoa(rand.Intn(256))
+	if slices.Contains(alreadyUsedColors, color) {
+		return randomColor(alreadyUsedColors)
+	}
+	return color
 }

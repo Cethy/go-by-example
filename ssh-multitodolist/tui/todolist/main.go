@@ -6,13 +6,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"ssh-multitodolist/app"
+	"ssh-multitodolist/app/state"
 	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/input"
 	"ssh-multitodolist/tui/statusBar"
 )
 
 type Model struct {
-	state      *app.State
+	state      *state.State
 	app        *app.App
 	repository *data.Repository
 	renderer   *lipgloss.Renderer
@@ -20,7 +21,7 @@ type Model struct {
 	Keys       KeyMap
 }
 
-func New(state *app.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer, listIndex int) Model {
+func New(state *state.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer, listIndex int) Model {
 	return Model{
 		state:      state,
 		app:        application,

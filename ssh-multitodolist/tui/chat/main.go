@@ -7,19 +7,20 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/reflow/wrap"
 	"ssh-multitodolist/app"
+	"ssh-multitodolist/app/state"
 	"ssh-multitodolist/tui/input"
 	"ssh-multitodolist/tui/statusBar"
 	"strings"
 )
 
 type Model struct {
-	state    *app.State
+	state    *state.State
 	app      *app.App
 	renderer *lipgloss.Renderer
 	Keys     KeyMap
 }
 
-func New(s *app.State, a *app.App, r *lipgloss.Renderer) Model {
+func New(s *state.State, a *app.App, r *lipgloss.Renderer) Model {
 	return Model{
 		state:    s,
 		app:      a,

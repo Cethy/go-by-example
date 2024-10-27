@@ -6,7 +6,7 @@ import (
 	"ssh-multitodolist/app/state"
 )
 
-type Message struct {
+type message struct {
 	Message string
 	Author  string
 	Color   string
@@ -18,20 +18,24 @@ type user struct {
 }
 
 type App struct {
-	Users map[string]*user
-	chat  []Message
+	users map[string]*user
+	chat  []message
 }
 
 func New(welcomeMessage string) *App {
 	return &App{
-		Users: make(map[string]*user),
-		chat:  []Message{{Message: welcomeMessage}},
+		users: make(map[string]*user),
+		chat:  []message{{Message: welcomeMessage}},
 	}
+}
+
+func (a *App) IsUserActive(username string) bool {
+	return a.users[username] != nil
 }
 
 func (a *App) StatesSorted() []*state.State {
 	var states []*state.State
-	for _, u := range a.Users {
+	for _, u := range a.users {
 		states = append(states, u.State)
 	}
 	sort.Slice(states, func(i, j int) bool {
@@ -41,10 +45,18 @@ func (a *App) StatesSorted() []*state.State {
 	return states
 }
 
+func (a *App) GetUsedColors() []string {
+	colors := make([]string, 0)
+	for _, u := range a.users {
+		colors = append(colors, u.State.Color)
+	}
+	return colors
+}
+
 type UserListUpdatedMsg struct{}
 
 func (a *App) AddUser(program *tea.Program, state *state.State) {
-	a.Users[state.Username] = &user{
+	a.users[state.Username] = &user{
 		Program: program,
 		State:   state,
 	}
@@ -53,23 +65,23 @@ func (a *App) AddUser(program *tea.Program, state *state.State) {
 }
 
 func (a *App) RemoveUser(username string) {
-	delete(a.Users, username)
+	delete(a.users, username)
 
 	a.Notify(UserListUpdatedMsg{})
 }
 
 func (a *App) AddChatMessage(m, owner, color string) {
-	a.chat = append(a.chat, Message{m, owner, color})
+	a.chat = append(a.chat, message{m, owner, color})
 	a.NotifyNewData()
 }
-func (a *App) GetChatMessages() []Message {
+func (a *App) GetChatMessages() []message {
 	return a.chat
 }
 
 // notify
 
 func (a *App) Notify(msg tea.Msg) {
-	for _, u := range a.Users {
+	for _, u := range a.users {
 		go u.Program.Send(msg)
 	}
 }
@@ -91,5 +103,3 @@ type UserPositionUpdatedMsg struct{}
 func (a *App) NotifyUserPositionUpdated() {
 	a.Notify(UserPositionUpdatedMsg{})
 }
-
-//

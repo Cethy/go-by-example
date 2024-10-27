@@ -18,9 +18,8 @@ import (
 	"os"
 	"os/signal"
 	"slices"
-	"ssh-multitodolist/app"
+	"ssh-multitodolist/app/room"
 	"ssh-multitodolist/app/state"
-	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/root"
 	"strconv"
 	"syscall"
@@ -32,31 +31,25 @@ var serveSSHCmd = &cobra.Command{
 	Short: "starts ssh multi-user server",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
-			host = "0.0.0.0"
-			port = "23234"
+			host        = "0.0.0.0"
+			port        = "23234"
+			roomManager = room.NewManager()
 		)
 
 		if os.Getenv("PORT") != "" {
 			port = os.Getenv("PORT")
 		}
 
-		a := app.New("Welcome to the chat! 👋")
-
-		r := data.New("./TODO.md", a.NotifyNewData, a.NotifyListRemoved)
-		err := r.Init()
-		if err != nil {
-			panic(err)
-		}
-
 		s, err := wish.NewServer(
 			wish.WithAddress(net.JoinHostPort(host, port)),
 			wish.WithHostKeyPath(".ssh/id_ed25519"),
-
 			// app
 			wish.WithMiddleware(
-				applicationMiddleware(r, a),
-				removeDisconnectedUsersMiddleware(a),
-				usernameAlreadyUsedMiddleware(a),
+				applicationMiddleware(),
+				removeDisconnectedUsersMiddleware,
+				usernameAlreadyUsedMiddleware,
+				selectRoomMiddleware,
+				contextMiddleware(roomManager),
 				activeterm.Middleware(),
 				logging.Middleware(),
 			),
@@ -87,43 +80,84 @@ var serveSSHCmd = &cobra.Command{
 	},
 }
 
-// will exit connections if username is already used on some other connection
-func usernameAlreadyUsedMiddleware(a *app.App) wish.Middleware {
+// contextMiddleware adds the room.Manager to the session context.
+func contextMiddleware(m *room.Manager) wish.Middleware {
 	return func(next ssh.Handler) ssh.Handler {
 		return func(s ssh.Session) {
-			if a.Users[s.User()] == nil {
-				next(s)
-			}
-			fmt.Fprintln(s, "Username \""+s.User()+"\" is already used.")
+			ctx := s.Context()
+			room.ContextSetManager(ctx, m)
+
+			log.Print(s.Context())
+			next(s)
+		}
+	}
+}
+
+// selectRoomMiddleware adds the selected room.Room to the session context.
+// it will exit connection if room name isn't valid
+// This middleware must be run after the contextMiddleware.
+func selectRoomMiddleware(next ssh.Handler) ssh.Handler {
+	return func(s ssh.Session) {
+		ctx := s.Context()
+		manager := room.ManagerFromContext(ctx)
+
+		roomName := ""
+		if len(s.Command()) > 0 {
+			roomName = s.Command()[0]
+		}
+		roomName, err := room.GetRoomName(roomName)
+		if err != nil {
+			fmt.Fprintln(s, err)
 			s.Exit(1)
 		}
-	}
-}
 
-func removeDisconnectedUsersMiddleware(a *app.App) wish.Middleware {
-	return func(next ssh.Handler) ssh.Handler {
-		return func(sess ssh.Session) {
-			next(sess)
-			a.RemoveUser(sess.User())
+		r, err := manager.SelectRoom(roomName)
+		if err != nil {
+			fmt.Fprintln(s, err)
+			s.Exit(1)
 		}
+		room.ContextSetRoom(ctx, r)
+
+		next(s)
 	}
 }
 
-func applicationMiddleware(repository *data.Repository, application *app.App) wish.Middleware {
+// usernameAlreadyUsedMiddleware will exit connection if username is already used in the particular app
+// This middleware must be run after the selectRoomMiddleware.
+func usernameAlreadyUsedMiddleware(next ssh.Handler) ssh.Handler {
+	return func(s ssh.Session) {
+		r := room.RoomFromContext(s.Context())
+		if !r.App.IsUserActive(s.User()) {
+			next(s)
+		}
+		fmt.Fprintln(s, "Username \""+s.User()+"\" is already in use.")
+		s.Exit(1)
+	}
+}
+
+// removeDisconnectedUsersMiddleware handles the removal of user from app when disconnecting
+// This middleware must be run after the selectRoomMiddleware.
+func removeDisconnectedUsersMiddleware(next ssh.Handler) ssh.Handler {
+	return func(s ssh.Session) {
+		r := room.RoomFromContext(s.Context())
+		next(s)
+		r.App.RemoveUser(s.User())
+	}
+}
+
+// applicationMiddleware handles the bubbletea app
+// This middleware must be run after the selectRoomMiddleware.
+func applicationMiddleware() wish.Middleware {
 	programHandler := func(s ssh.Session) *tea.Program {
-		_, _, active := s.Pty()
-		if !active {
-			wish.Fatalln(s, "no active terminal, skipping")
-			return nil
-		}
+		ro := room.RoomFromContext(s.Context())
 
 		var (
 			r  = bubbletea.MakeRenderer(s) // biggest gotcha working with bubbletea and ssh D:
-			st = state.New(s.User(), randomColor([]string{}), application.NotifyUserPositionUpdated)
-			m  = root.New(st, application, repository, r, false)
+			st = state.New(s.User(), randomColor(ro.App.GetUsedColors()), ro.App.NotifyUserPositionUpdated)
+			m  = root.New(st, ro.App, ro.Repository, r, false)
 			p  = tea.NewProgram(m, append(bubbletea.MakeOptions(s), tea.WithAltScreen())...)
 		)
-		application.AddUser(p, st)
+		ro.App.AddUser(p, st)
 
 		return p
 	}

@@ -9,14 +9,16 @@ import (
 	"log"
 	"os"
 	"ssh-multitodolist/app"
+	"ssh-multitodolist/app/room"
 	"ssh-multitodolist/app/state"
 	"ssh-multitodolist/data"
 	"ssh-multitodolist/tui/root"
 )
 
 var standAloneCmd = &cobra.Command{
-	Use:   "standalone",
+	Use:   "standalone [room]",
 	Short: "starts as a standalone app",
+	Args:  cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(os.Getenv("DEBUG")) > 0 {
 			f, err := tea.LogToFile("debug.log", "debug")
@@ -29,8 +31,17 @@ var standAloneCmd = &cobra.Command{
 			log.SetOutput(io.Discard)
 		}
 
-		repository := data.New("./TODO.md", func() {}, func() {})
-		err := repository.Init()
+		roomName := ""
+		if len(args) > 0 {
+			roomName = args[0]
+		}
+		roomName, err := room.GetRoomName(roomName)
+		if err != nil {
+			return err
+		}
+
+		repository := data.New("./"+roomName+".md", func() {}, func() {})
+		err = repository.Init()
 		if err != nil {
 			return err
 		}

@@ -1,16 +1,16 @@
 ---
 Order: 12
-Title: SSHable Multi Todo List 
+Title: SSHable Multi-user Todolist 
 #Dependencies: ["./demo.gif"]
 ImgSrc: https://images.unsplash.com/photo-1591439657848-9f4b9ce436b9?ixid=M3w2NjYzMTJ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Mjk0NTI5MDF8&ixlib=rb-4.0.3
 ---
 
-# SSHable multi todo list
+# SSHable Multi-user Todolist
 
 ## Instructions
 
 Build upon previous [Multi todo list project](./cli-multitodolist.html)
-and make it reachable via ssh
+and make it reachable via ssh and multi-user
 
 ![Made with VHS](./demo.gif)
 
@@ -21,26 +21,33 @@ and make it reachable via ssh
 - see what the other users do (cursor & active tab)
 - talk to other users (sidebar chat)
 - standalone mode (with multi-users UIs disabled)
+- multi-room(/files) setup
 
 ## Usage
 
 ```shell
 # ssh server
-go run main.go server [--port=23234]
+[PORT=23234] go run main.go server
+# connect to server
+ssh -p23234 -t localhost [room]
 
 # standalone
-go run main.go standalone
+go run main.go standalone [room]
 ```
 
 ## TODO
 
-- [ ] authentication
-- [ ] new todo by url
-- [ ] https landing page (go to ssh...)
-- [ ] redis repository
-- [ ] source filename flag
-- [ ] header viewport
-- [ ] shift-enter behavior (submit and open input again)
+- [ ] user management & authentication
+  - [ ] store user's pubkey
+  - [ ] public/private ROOM settings
+  - [ ] INVITE arg for first-time private room login
+- [ ] https landing page ("go to ssh...")
+- [ ] alt redis repository & better data abstraction
+- [ ] header horizontal viewport
+- [ ] ctrl-enter behavior (submit and open input again)
 - [ ] refactor with lipgloss.SetDefaultRenderer() ?
 - [ ] migrate to bubbletea v2
 - [ ] better help grouping
+- [ ] alternate kanban view
+- [ ] special access to list the rooms
+- [ ] cleanup empty rooms (?)

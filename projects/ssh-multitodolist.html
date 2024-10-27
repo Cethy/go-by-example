@@ -30,16 +30,16 @@
 </header>
 <section class="mb-10 w-full min-h-[calc(100vh_-_theme(spacing.64))]">
     <h1 class="mb-5 text-3xl font-bold">
-        SSHable Multi Todo List
+        SSHable Multi-user Todolist
     </h1>
 
     <img src="https://images.unsplash.com/photo-1591439657848-9f4b9ce436b9?ixid=M3w2NjYzMTJ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Mjk0NTI5MDF8&ixlib=rb-4.0.3" class="object-cover h-32 w-full mb-5 rounded-lg" alt="image article">
 
     <article class="flex flex-col gap-4">
-    <h1 class="text-3xl font-bold">SSHable multi todo list</h1>
+    <h1 class="text-3xl font-bold">SSHable Multi-user Todolist</h1>
 <h2 class="text-2xl font-bold">Instructions</h2>
 <p class="">Build upon previous <a href="./cli-multitodolist.html" class="text-blue-600 hover:underline focus:border-blue-400 active:bg-blue-600 visited:text-purple-600">Multi todo list project</a>
-and make it reachable via ssh</p>
+and make it reachable via ssh and multi-user</p>
 <p class=""><img src="./demo.gif" alt="Made with VHS" class=""></p>
 <h2 class="text-2xl font-bold">Key Features</h2>
 <ul class="list-disc list-outside md:list-inside">
@@ -48,26 +48,36 @@ and make it reachable via ssh</p>
 <li class="">see what the other users do (cursor &amp; active tab)</li>
 <li class="">talk to other users (sidebar chat)</li>
 <li class="">standalone mode (with multi-users UIs disabled)</li>
+<li class="">multi-room(/files) setup</li>
 </ul>
 <h2 class="text-2xl font-bold">Usage</h2>
 <pre><code class="language-shell"># ssh server
-go run main.go server [--port=23234]
+[PORT=23234] go run main.go server
+# connect to server
+ssh -p23234 -t localhost [room]
 
 # standalone
-go run main.go standalone
+go run main.go standalone [room]
 </code></pre>
 <h2 class="text-2xl font-bold">TODO</h2>
 <ul class="list-disc list-outside md:list-inside">
-<li class="">[ ] authentication</li>
-<li class="">[ ] new todo by url</li>
-<li class="">[ ] https landing page (go to ssh...)</li>
-<li class="">[ ] redis repository</li>
-<li class="">[ ] source filename flag</li>
-<li class="">[ ] header viewport</li>
-<li class="">[ ] shift-enter behavior (submit and open input again)</li>
+<li class="">[ ] user management &amp; authentication
+<ul class="list-disc list-outside md:list-inside pl-4">
+<li class="">[ ] store user's pubkey</li>
+<li class="">[ ] public/private ROOM settings</li>
+<li class="">[ ] INVITE arg for first-time private room login</li>
+</ul>
+</li>
+<li class="">[ ] https landing page (&quot;go to ssh...&quot;)</li>
+<li class="">[ ] alt redis repository &amp; better data abstraction</li>
+<li class="">[ ] header horizontal viewport</li>
+<li class="">[ ] ctrl-enter behavior (submit and open input again)</li>
 <li class="">[ ] refactor with lipgloss.SetDefaultRenderer() ?</li>
 <li class="">[ ] migrate to bubbletea v2</li>
 <li class="">[ ] better help grouping</li>
+<li class="">[ ] alternate kanban view</li>
+<li class="">[ ] special access to list the rooms</li>
+<li class="">[ ] cleanup empty rooms (?)</li>
 </ul>
 
 

@@ -1,20 +1,11 @@
-package data
+package file
 
 import (
 	"os"
 	"regexp"
+	"ssh-multitodolist/data"
 	"strings"
 )
-
-type ListItem struct {
-	Value   string
-	Checked bool
-}
-
-type NamedList struct {
-	Name  string
-	Items []ListItem
-}
 
 /**
 IMPORT/EXPORT data format:
@@ -37,13 +28,13 @@ IMPORT/EXPORT data format:
 ```
 */
 
-func readList(raw string) []ListItem {
+func readList(raw string) []data.ListItem {
 	pattern := "\\- \\[(?P<Checked> ?x?)\\] (?P<Value>[A-z0-9].*)"
 	r, _ := regexp.Compile(pattern)
 	all := r.FindAllStringSubmatch(raw, -1)
-	var listItems []ListItem
+	var listItems []data.ListItem
 	for _, item := range all {
-		listItems = append(listItems, ListItem{
+		listItems = append(listItems, data.ListItem{
 			Value:   item[r.SubexpIndex("Value")],
 			Checked: item[r.SubexpIndex("Checked")] == "x",
 		})
@@ -52,8 +43,8 @@ func readList(raw string) []ListItem {
 	return listItems
 }
 
-func ReadData(sourcePath string) ([]NamedList, error) {
-	var namedLists []NamedList
+func readData(sourcePath string) ([]data.NamedList, error) {
+	var namedLists []data.NamedList
 
 	rawContent, err := os.ReadFile(sourcePath)
 	if os.IsNotExist(err) {
@@ -74,7 +65,7 @@ func ReadData(sourcePath string) ([]NamedList, error) {
 			name = titleMatch[r.SubexpIndex("Title")]
 		}
 
-		namedLists = append(namedLists, NamedList{
+		namedLists = append(namedLists, data.NamedList{
 			Name:  name,
 			Items: readList(rawList),
 		})
@@ -83,7 +74,7 @@ func ReadData(sourcePath string) ([]NamedList, error) {
 	return namedLists, nil
 }
 
-func WriteData(namedLists []NamedList, targetPath string) error {
+func writeData(namedLists []data.NamedList, targetPath string) error {
 	content := ""
 	for i, namedList := range namedLists {
 		if i > 0 {

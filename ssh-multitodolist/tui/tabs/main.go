@@ -16,12 +16,12 @@ import (
 type Model struct {
 	state      *state.State
 	app        *app.App
-	repository *data.Repository
+	repository data.Repository
 	renderer   *lipgloss.Renderer
 	Keys       KeyMap
 }
 
-func New(state *state.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer) Model {
+func New(state *state.State, application *app.App, repository data.Repository, renderer *lipgloss.Renderer) Model {
 	return Model{
 		state:      state,
 		app:        application,

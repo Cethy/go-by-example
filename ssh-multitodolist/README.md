@@ -37,12 +37,12 @@ go run main.go standalone [room]
 
 ## TODO
 
+- [ ] alt redis repository & better data abstraction
 - [ ] user management & authentication
   - [ ] store user's pubkey
   - [ ] public/private ROOM settings
   - [ ] INVITE arg for first-time private room login
 - [ ] https landing page ("go to ssh...")
-- [ ] alt redis repository & better data abstraction
 - [ ] header horizontal viewport
 - [ ] ctrl-enter behavior (submit and open input again)
 - [ ] refactor with lipgloss.SetDefaultRenderer() ?

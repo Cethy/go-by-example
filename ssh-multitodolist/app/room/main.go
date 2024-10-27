@@ -11,19 +11,20 @@ import (
 type Room struct {
 	name       string
 	App        *app.App
-	Repository *data.Repository
+	Repository data.Repository
 }
 
-func newRoom(name string, app *app.App, repository *data.Repository) *Room {
+func newRoom(name string, app *app.App, repository data.Repository) *Room {
 	return &Room{name, app, repository}
 }
 
 type Manager struct {
-	rooms []*Room
+	rooms             []*Room
+	repositoryFactory func(roomName string, app *app.App) data.Repository
 }
 
-func NewManager() *Manager {
-	return &Manager{make([]*Room, 0)}
+func NewManager(rf func(roomName string, app *app.App) data.Repository) *Manager {
+	return &Manager{make([]*Room, 0), rf}
 }
 
 func (m *Manager) SelectRoom(roomName string) (*Room, error) {
@@ -37,7 +38,7 @@ func (m *Manager) SelectRoom(roomName string) (*Room, error) {
 	}
 
 	a := app.New("Welcome to ssh-mutlitodolist! 👋")
-	r := data.New("./"+roomName+".md", a.NotifyNewData, a.NotifyListRemoved)
+	r := m.repositoryFactory(roomName, a)
 	err := r.Init()
 	if err != nil {
 		return nil, err

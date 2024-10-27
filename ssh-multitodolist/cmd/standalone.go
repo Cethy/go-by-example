@@ -11,7 +11,7 @@ import (
 	"ssh-multitodolist/app"
 	"ssh-multitodolist/app/room"
 	"ssh-multitodolist/app/state"
-	"ssh-multitodolist/data"
+	"ssh-multitodolist/data/file"
 	"ssh-multitodolist/tui/root"
 )
 
@@ -40,7 +40,7 @@ var standAloneCmd = &cobra.Command{
 			return err
 		}
 
-		repository := data.New("./"+roomName+".md", func() {}, func() {})
+		repository := file.New(roomName, func() {}, func() {})
 		err = repository.Init()
 		if err != nil {
 			return err

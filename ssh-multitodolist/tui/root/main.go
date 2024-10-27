@@ -23,7 +23,6 @@ import (
 type Model struct {
 	state               *state.State
 	app                 *app.App
-	repository          *data.Repository
 	renderer            *lipgloss.Renderer
 	tabs                tabs.Model
 	todolist            todolist.Model
@@ -43,24 +42,23 @@ type Model struct {
 	mainPanelWidth      int
 }
 
-func New(state *state.State, application *app.App, repository *data.Repository, renderer *lipgloss.Renderer, standalone bool) Model {
+func New(state *state.State, application *app.App, repository data.Repository, renderer *lipgloss.Renderer, standalone bool) Model {
 	chatWidth := 40
 	if standalone {
 		chatWidth = 0
 	}
 
 	return Model{
-		state:      state,
-		app:        application,
-		repository: repository,
-		renderer:   renderer,
-		tabs:       tabs.New(state, application, repository, renderer),
-		help:       help.New(renderer),
-		keys:       keys.Keys,
-		statusBar:  statusBar.New(state.Username, renderer),
-		todolist:   todolist.New(state, application, repository, renderer, 0),
-		viewport:   viewport.New(),
-		chat:       chat.New(state, application, renderer),
+		state:     state,
+		app:       application,
+		renderer:  renderer,
+		tabs:      tabs.New(state, application, repository, renderer),
+		help:      help.New(renderer),
+		keys:      keys.Keys,
+		statusBar: statusBar.New(state.Username, renderer),
+		todolist:  todolist.New(state, application, repository, renderer, 0),
+		viewport:  viewport.New(),
+		chat:      chat.New(state, application, renderer),
 		addEntryInput: input.New(
 			"addEntryInput",
 			todolist.CreateEntryCmd,
@@ -120,11 +118,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 	case tea.KeyMsg:
 		if key.Matches(msg, m.keys.ForceQuit) {
-			err := m.repository.Commit()
-			if err != nil {
-				panic(err)
-			}
-
 			return m, tea.Quit
 		} else if !m.isAnyInputActive() {
 			switch {
@@ -136,13 +129,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return statusBar.NewStatusMsg("🐶 helping")
 					})
 				}
-
 			case key.Matches(msg, m.keys.Quit):
-				err := m.repository.Commit()
-				if err != nil {
-					panic(err)
-				}
-
 				return m, tea.Quit
 			}
 		}

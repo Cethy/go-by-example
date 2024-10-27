@@ -18,8 +18,11 @@ import (
 	"os"
 	"os/signal"
 	"slices"
+	"ssh-multitodolist/app"
 	"ssh-multitodolist/app/room"
 	"ssh-multitodolist/app/state"
+	"ssh-multitodolist/data"
+	"ssh-multitodolist/data/file"
 	"ssh-multitodolist/tui/root"
 	"strconv"
 	"syscall"
@@ -33,7 +36,9 @@ var serveSSHCmd = &cobra.Command{
 		var (
 			host        = "0.0.0.0"
 			port        = "23234"
-			roomManager = room.NewManager()
+			roomManager = room.NewManager(func(roomName string, a *app.App) data.Repository {
+				return file.New(roomName, a.NotifyNewData, a.NotifyListRemoved)
+			})
 		)
 
 		if os.Getenv("PORT") != "" {

@@ -11,6 +11,7 @@ require (
 	github.com/charmbracelet/wish v1.4.3
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.15.3-0.20240509142007-81b8f94111d5
+	github.com/redis/go-redis/v9 v9.7.0
 	github.com/spf13/cobra v1.8.1
 )
 
@@ -18,6 +19,7 @@ require (
 	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/charmbracelet/keygen v0.5.1 // indirect
 	github.com/charmbracelet/x/ansi v0.2.3 // indirect
 	github.com/charmbracelet/x/conpty v0.1.0 // indirect
@@ -26,6 +28,7 @@ require (
 	github.com/charmbracelet/x/term v0.2.0 // indirect
 	github.com/charmbracelet/x/termios v0.1.0 // indirect
 	github.com/creack/pty v1.1.21 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

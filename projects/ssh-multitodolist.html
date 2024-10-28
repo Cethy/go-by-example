@@ -49,19 +49,22 @@ and make it reachable via ssh and multi-user</p>
 <li class="">talk to other users (sidebar chat)</li>
 <li class="">standalone mode (with multi-users UIs disabled)</li>
 <li class="">multi-room(/files) setup</li>
+<li class="">optional redis storage</li>
 </ul>
 <h2 class="text-2xl font-bold">Usage</h2>
 <pre><code class="language-shell"># ssh server
 [PORT=23234] go run main.go server
+# ssh server (redis)
+# docker run -d --name redis-todo -p 6379:6379 redis
+[REDIS_ADDR=&quot;localhost:6379&quot;] [REDIS_PASSWORD=&quot;&quot;] [PORT=23234] go run main.go server [--db=&quot;file&quot;|&quot;redis&quot;]
 # connect to server
 ssh -p23234 -t localhost [room]
 
 # standalone
-go run main.go standalone [room]
+go run main.go standalone [room] [--db=&quot;file&quot;|&quot;redis&quot;]
 </code></pre>
 <h2 class="text-2xl font-bold">TODO</h2>
 <ul class="list-disc list-outside md:list-inside">
-<li class="">[ ] alt redis repository &amp; better data abstraction</li>
 <li class="">[ ] user management &amp; authentication
 <ul class="list-disc list-outside md:list-inside pl-4">
 <li class="">[ ] store user's pubkey</li>

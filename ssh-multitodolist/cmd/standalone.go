@@ -11,7 +11,6 @@ import (
 	"ssh-multitodolist/app"
 	"ssh-multitodolist/app/room"
 	"ssh-multitodolist/app/state"
-	"ssh-multitodolist/data/file"
 	"ssh-multitodolist/tui/root"
 )
 
@@ -31,27 +30,32 @@ var standAloneCmd = &cobra.Command{
 			log.SetOutput(io.Discard)
 		}
 
-		roomName := ""
-		if len(args) > 0 {
-			roomName = args[0]
-		}
-		roomName, err := room.GetRoomName(roomName)
+		dbType, err := cmd.Flags().GetString("db")
 		if err != nil {
 			return err
 		}
 
-		repository := file.New(roomName, func() {}, func() {})
-		err = repository.Init()
+		roomName := ""
+		if len(args) > 0 {
+			roomName = args[0]
+		}
+		roomName, err = room.GetRoomName(roomName)
+		if err != nil {
+			return err
+		}
+
+		application := app.New("")
+
+		repository, err := getRepositoryFactory(dbType)(roomName, application)
 		if err != nil {
 			return err
 		}
 
 		var (
-			application = app.New("")
-			r           = lipgloss.DefaultRenderer()
-			st          = state.New("", "255", application.NotifyUserPositionUpdated)
-			m           = root.New(st, application, repository, r, true)
-			p           = tea.NewProgram(m, tea.WithAltScreen())
+			r  = lipgloss.DefaultRenderer()
+			st = state.New("", "255", application.NotifyUserPositionUpdated)
+			m  = root.New(st, application, repository, r, true)
+			p  = tea.NewProgram(m, tea.WithAltScreen())
 		)
 
 		if _, err := p.Run(); err != nil {

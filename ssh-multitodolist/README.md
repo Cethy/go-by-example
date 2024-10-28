@@ -22,22 +22,25 @@ and make it reachable via ssh and multi-user
 - talk to other users (sidebar chat)
 - standalone mode (with multi-users UIs disabled)
 - multi-room(/files) setup
+- optional redis storage
 
 ## Usage
 
 ```shell
 # ssh server
 [PORT=23234] go run main.go server
+# ssh server (redis)
+# docker run -d --name redis-todo -p 6379:6379 redis
+[REDIS_ADDR="localhost:6379"] [REDIS_PASSWORD=""] [PORT=23234] go run main.go server [--db="file"|"redis"]
 # connect to server
 ssh -p23234 -t localhost [room]
 
 # standalone
-go run main.go standalone [room]
+go run main.go standalone [room] [--db="file"|"redis"]
 ```
 
 ## TODO
 
-- [ ] alt redis repository & better data abstraction
 - [ ] user management & authentication
   - [ ] store user's pubkey
   - [ ] public/private ROOM settings

@@ -1,4 +1,4 @@
-package file
+package storage
 
 import (
 	"os"
@@ -7,46 +7,18 @@ import (
 	"strings"
 )
 
-/**
-IMPORT/EXPORT data format:
-```markdown
-# list 1
-
-- [ ] Foo
-- [x] Bar
-- [] Baz
-
----
-
-# list 2
-
----
-
-- [ ] unnamed list's item
-- [x] Bar2
-- [ ] Baz2
-```
-*/
-
-func readList(raw string) []data.ListItem {
-	pattern := "\\- \\[(?P<Checked> ?x?)\\] (?P<Value>[A-z0-9].*)"
-	r, _ := regexp.Compile(pattern)
-	all := r.FindAllStringSubmatch(raw, -1)
-	var listItems []data.ListItem
-	for _, item := range all {
-		listItems = append(listItems, data.ListItem{
-			Value:   item[r.SubexpIndex("Value")],
-			Checked: item[r.SubexpIndex("Checked")] == "x",
-		})
-	}
-
-	return listItems
+type File struct {
+	filename string
 }
 
-func readData(sourcePath string) ([]data.NamedList, error) {
+func NewFileStorage(roomName string) *File {
+	return &File{"./" + roomName + ".md"}
+}
+
+func (f *File) Init() ([]data.NamedList, error) {
 	var namedLists []data.NamedList
 
-	rawContent, err := os.ReadFile(sourcePath)
+	rawContent, err := os.ReadFile(f.filename)
 	if os.IsNotExist(err) {
 		rawContent = []byte(`# `)
 	} else if err != nil {
@@ -74,7 +46,7 @@ func readData(sourcePath string) ([]data.NamedList, error) {
 	return namedLists, nil
 }
 
-func writeData(namedLists []data.NamedList, targetPath string) error {
+func (f *File) Commit(namedLists []data.NamedList) error {
 	content := ""
 	for i, namedList := range namedLists {
 		if i > 0 {
@@ -92,5 +64,20 @@ func writeData(namedLists []data.NamedList, targetPath string) error {
 		}
 	}
 
-	return os.WriteFile(targetPath, []byte(content), 0644)
+	return os.WriteFile(f.filename, []byte(content), 0644)
+}
+
+func readList(raw string) []data.ListItem {
+	pattern := "\\- \\[(?P<Checked> ?x?)\\] (?P<Value>[A-z0-9].*)"
+	r, _ := regexp.Compile(pattern)
+	all := r.FindAllStringSubmatch(raw, -1)
+	var listItems []data.ListItem
+	for _, item := range all {
+		listItems = append(listItems, data.ListItem{
+			Value:   item[r.SubexpIndex("Value")],
+			Checked: item[r.SubexpIndex("Checked")] == "x",
+		})
+	}
+
+	return listItems
 }

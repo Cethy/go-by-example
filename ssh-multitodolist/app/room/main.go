@@ -20,10 +20,10 @@ func newRoom(name string, app *app.App, repository data.Repository) *Room {
 
 type Manager struct {
 	rooms             []*Room
-	repositoryFactory func(roomName string, app *app.App) data.Repository
+	repositoryFactory func(roomName string, app *app.App) (data.Repository, error)
 }
 
-func NewManager(rf func(roomName string, app *app.App) data.Repository) *Manager {
+func NewManager(rf func(roomName string, app *app.App) (data.Repository, error)) *Manager {
 	return &Manager{make([]*Room, 0), rf}
 }
 
@@ -38,8 +38,7 @@ func (m *Manager) SelectRoom(roomName string) (*Room, error) {
 	}
 
 	a := app.New("Welcome to ssh-mutlitodolist! 👋")
-	r := m.repositoryFactory(roomName, a)
-	err := r.Init()
+	r, err := m.repositoryFactory(roomName, a)
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
+	"ssh-multitodolist/app"
+	"ssh-multitodolist/data"
+	"ssh-multitodolist/data/storage"
 )
 
 var rootCmd = &cobra.Command{
@@ -22,6 +25,35 @@ func Execute() {
 }
 
 func init() {
+	serveSSHCmd.Flags().String("db", "file", "db type, file or redis")
 	rootCmd.AddCommand(serveSSHCmd)
+
+	standAloneCmd.Flags().String("db", "file", "db type, file or redis")
 	rootCmd.AddCommand(standAloneCmd)
+}
+
+func getRepositoryFactory(storageType string) func(roomName string, app *app.App) (data.Repository, error) {
+	switch storageType {
+	case "file":
+		return func(roomName string, app *app.App) (data.Repository, error) {
+			s := storage.NewFileStorage(roomName)
+			return data.New(s, app.NotifyNewData, app.NotifyListRemoved)
+		}
+	case "redis":
+		addr, ok := os.LookupEnv("REDIS_ADDR")
+		if !ok {
+			addr = "localhost:6379"
+		}
+		password, ok := os.LookupEnv("REDIS_PASSWORD")
+		if !ok {
+			password = ""
+		}
+		rdb := storage.NewRedisClient(addr, password)
+
+		return func(roomName string, app *app.App) (data.Repository, error) {
+			s := storage.NewRedisStorage(rdb, roomName)
+			return data.New(s, app.NotifyNewData, app.NotifyListRemoved)
+		}
+	}
+	return nil
 }

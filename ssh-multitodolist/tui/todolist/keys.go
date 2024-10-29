@@ -64,9 +64,9 @@ func (k KeyMap) HelpDirection() []key.Binding {
 	return []key.Binding{k.Up, k.Down}
 }
 
-func (k KeyMap) HelpActions() [][]key.Binding {
-	return [][]key.Binding{
-		{k.AddItem, k.EditItem, k.RemoveItem, k.Check, k.MoveItemUp, k.MoveItemDown},
-		{k.Enter, k.Cancel},
+func (k KeyMap) HelpActions() []key.Binding {
+	return []key.Binding{
+		k.AddItem, k.EditItem, k.RemoveItem, k.Check, k.MoveItemUp, k.MoveItemDown,
+		//k.Enter, k.Cancel,
 	}
 }

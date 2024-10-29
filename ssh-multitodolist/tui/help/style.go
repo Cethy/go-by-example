@@ -5,7 +5,7 @@ import "github.com/charmbracelet/lipgloss"
 func GetStyles(r *lipgloss.Renderer) (lipgloss.Style, lipgloss.Style) {
 	keyStyle := r.NewStyle().Foreground(lipgloss.AdaptiveColor{
 		Light: "#909090",
-		Dark:  "#626262",
+		Dark:  "#cccccc",
 	})
 
 	descStyle := r.NewStyle().Foreground(lipgloss.AdaptiveColor{

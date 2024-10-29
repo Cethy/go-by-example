@@ -179,11 +179,14 @@ func (m Model) viewHeader() string {
 }
 
 func (m Model) viewHelp() string {
-	helpKeys := [][]key.Binding{m.keys.ShortHelp(), append(m.todolist.Keys.HelpDirection(), m.tabs.Keys.HelpDirection()...)}
-	helpKeys = append(helpKeys, m.tabs.Keys.HelpActions())
-	helpKeys = append(helpKeys, m.todolist.Keys.HelpActions()...)
+	helpKeys := []help.KeysForView{
+		{"global", m.keys.HelpKeys()},
+		{"navigation", append(m.todolist.Keys.HelpDirection(), m.tabs.Keys.HelpDirection()...)},
+		{"actions", m.tabs.Keys.HelpActions()},
+		{"more actions", m.todolist.Keys.HelpActions()},
+	}
 	if !m.standalone {
-		helpKeys = append(helpKeys, m.chat.Keys.HelpActions()...)
+		helpKeys = append(helpKeys, help.KeysForView{Title: "chat", Keys: m.chat.Keys.HelpActions()})
 	}
 	return m.help.View(helpKeys)
 }

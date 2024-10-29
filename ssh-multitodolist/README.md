@@ -50,7 +50,6 @@ go run main.go standalone [room] [--db="file"|"redis"]
 - [ ] ctrl-enter behavior (submit and open input again)
 - [ ] refactor with lipgloss.SetDefaultRenderer() ?
 - [ ] migrate to bubbletea v2
-- [ ] better help grouping
 - [ ] alternate kanban view
 - [ ] special access to list the rooms
 - [ ] cleanup empty rooms (?)

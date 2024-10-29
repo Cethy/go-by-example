@@ -22,10 +22,6 @@ var Keys = KeyMap{
 	),
 }
 
-func (k KeyMap) ShortHelp() []key.Binding {
+func (k KeyMap) HelpKeys() []key.Binding {
 	return []key.Binding{k.Help, k.Quit}
-}
-
-func (k KeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{k.ShortHelp()}
 }

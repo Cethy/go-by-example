@@ -27,7 +27,12 @@ func (m Model) Update() (Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) View(helpKeys [][]key.Binding) string {
+type KeysForView struct {
+	Title string
+	Keys  []key.Binding
+}
+
+func (m Model) View(helpKeys []KeysForView) string {
 	keyStyle, descStyle := GetStyles(m.renderer)
 
 	if m.ShowAll {
@@ -37,20 +42,21 @@ func (m Model) View(helpKeys [][]key.Binding) string {
 				keys         []string
 				descriptions []string
 			)
-			for _, kb := range group {
+			for _, kb := range group.Keys {
 				if !kb.Enabled() {
 					continue
 				}
 				keys = append(keys, kb.Help().Key)
 				descriptions = append(descriptions, kb.Help().Desc)
 			}
-
-			cols = append(cols, lipgloss.JoinHorizontal(lipgloss.Top,
-				keyStyle.Render(strings.Join(keys, "\n")),
-				keyStyle.Render(" "),
-				descStyle.Render(strings.Join(descriptions, "\n")),
-				keyStyle.Render("  "),
-			))
+			cols = append(cols, lipgloss.JoinVertical(lipgloss.Center,
+				group.Title,
+				lipgloss.JoinHorizontal(lipgloss.Top,
+					keyStyle.Render(strings.Join(keys, "\n")),
+					keyStyle.Render(" "),
+					descStyle.Render(strings.Join(descriptions, "\n")),
+					keyStyle.Render("  "),
+				)))
 		}
 		return "\n" + lipgloss.JoinHorizontal(lipgloss.Top, cols...) + "\n"
 	}

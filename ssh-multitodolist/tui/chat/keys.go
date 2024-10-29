@@ -24,9 +24,9 @@ var keys = KeyMap{
 	),
 }
 
-func (k KeyMap) HelpActions() [][]key.Binding {
-	return [][]key.Binding{
-		{k.AddMessage},
-		//{k.Enter, k.Cancel},
+func (k KeyMap) HelpActions() []key.Binding {
+	return []key.Binding{
+		k.AddMessage,
+		k.Enter, k.Cancel,
 	}
 }

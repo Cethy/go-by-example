@@ -171,6 +171,8 @@ func (m Model) viewHeader() string {
 		Align(lipgloss.Left, lipgloss.Top).
 		Render(m.tabs.View(
 			[]string{newTabView},
+			m.app.RoomName,
+			m.app.IsPrivate,
 			func(t string) string {
 				return m.editListInput.View()
 			},

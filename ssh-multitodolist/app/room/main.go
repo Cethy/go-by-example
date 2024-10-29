@@ -37,7 +37,7 @@ func (m *Manager) SelectRoom(roomName string) (*Room, error) {
 		}
 	}
 
-	a := app.New("Welcome to ssh-mutlitodolist! 👋")
+	a := app.New(roomName, "Welcome to ssh-mutlitodolist! 👋", false)
 	r, err := m.repositoryFactory(roomName, a)
 	if err != nil {
 		return nil, err

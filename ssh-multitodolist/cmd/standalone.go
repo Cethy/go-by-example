@@ -44,7 +44,7 @@ var standAloneCmd = &cobra.Command{
 			return err
 		}
 
-		application := app.New("")
+		application := app.New(roomName, "", false)
 
 		repository, err := getRepositoryFactory(dbType)(roomName, application)
 		if err != nil {

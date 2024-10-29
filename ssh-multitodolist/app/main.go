@@ -18,14 +18,18 @@ type user struct {
 }
 
 type App struct {
-	users map[string]*user
-	chat  []message
+	RoomName  string
+	IsPrivate bool
+	users     map[string]*user
+	chat      []message
 }
 
-func New(welcomeMessage string) *App {
+func New(roomName, welcomeMessage string, isPrivate bool) *App {
 	return &App{
-		users: make(map[string]*user),
-		chat:  []message{{Message: welcomeMessage}},
+		RoomName:  roomName,
+		IsPrivate: isPrivate,
+		users:     make(map[string]*user),
+		chat:      []message{{Message: welcomeMessage}},
 	}
 }
 

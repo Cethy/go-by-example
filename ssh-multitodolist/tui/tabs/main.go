@@ -101,7 +101,7 @@ func (m Model) Update(msg tea.Msg, isAnyInputActive bool) (Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View(extraTabs []string, editTabRender func(t string) string, width int) string {
+func (m Model) View(extraTabs []string, roomName string, isPrivate bool, editTabRender func(t string) string, width int) string {
 	tab, activeTab, tabGap := GetStyles(m.renderer)
 
 	var tabs []string
@@ -136,10 +136,16 @@ func (m Model) View(extraTabs []string, editTabRender func(t string) string, wid
 		tabs = append(tabs, tab.Render(t))
 	}
 
+	headerPre := roomName
+	if isPrivate {
+		headerPre = "🔒" + headerPre
+	}
+	headerPre = tabGap.Render(headerPre)
+
 	header := lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		tabs...,
 	)
-	gap := tabGap.Render(strings.Repeat(" ", max(0, width-lipgloss.Width(header)-2)))
-	return lipgloss.JoinHorizontal(lipgloss.Bottom, header, gap)
+	gap := tabGap.Render(strings.Repeat(" ", max(0, width-lipgloss.Width(header)-2-lipgloss.Width(headerPre))))
+	return lipgloss.JoinHorizontal(lipgloss.Bottom, headerPre, header, gap)
 }

@@ -91,7 +91,6 @@ func contextMiddleware(m *room.Manager) wish.Middleware {
 			ctx := s.Context()
 			room.ContextSetManager(ctx, m)
 
-			log.Print(s.Context())
 			next(s)
 		}
 	}
@@ -113,12 +112,22 @@ func selectRoomMiddleware(next ssh.Handler) ssh.Handler {
 		if err != nil {
 			fmt.Fprintln(s, err)
 			s.Exit(1)
+			return
 		}
 
-		r, err := manager.SelectRoom(roomName)
+		private := false
+		if len(s.Command()) > 1 {
+			private = s.Command()[1] == "true" || s.Command()[1] == "1"
+		}
+		r, err := manager.SelectRoom(roomName, private)
+		var errComp room.NotFoundError
+		if errors.As(err, &errComp) {
+			r, err = manager.CreateRoom(roomName, private)
+		}
 		if err != nil {
 			fmt.Fprintln(s, err)
 			s.Exit(1)
+			return
 		}
 		room.ContextSetRoom(ctx, r)
 

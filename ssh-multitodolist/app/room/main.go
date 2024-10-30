@@ -2,7 +2,6 @@ package room
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"ssh-multitodolist/app"
 	"ssh-multitodolist/data"
@@ -10,12 +9,13 @@ import (
 
 type Room struct {
 	name       string
+	Private    bool
 	App        *app.App
 	Repository data.Repository
 }
 
-func newRoom(name string, app *app.App, repository data.Repository) *Room {
-	return &Room{name, app, repository}
+func newRoom(name string, private bool, app *app.App, repository data.Repository) *Room {
+	return &Room{name, private, app, repository}
 }
 
 type Manager struct {
@@ -27,22 +27,41 @@ func NewManager(rf func(roomName string, app *app.App) (data.Repository, error))
 	return &Manager{make([]*Room, 0), rf}
 }
 
-func (m *Manager) SelectRoom(roomName string) (*Room, error) {
-	log.Println(m)
+type NotFoundError struct {
+	roomName string
+}
+
+func (e NotFoundError) Error() string {
+	return fmt.Sprintf("room \"%s\" not found", e.roomName)
+}
+
+type ConflictingPrivateError struct{}
+
+func (e ConflictingPrivateError) Error() string {
+	return fmt.Sprint("cannot access this room with this privacy level")
+}
+
+func (m *Manager) SelectRoom(roomName string, private bool) (*Room, error) {
 	if len(m.rooms) > 0 {
 		for _, room := range m.rooms {
 			if room.name == roomName {
+				if private != room.Private {
+					return nil, ConflictingPrivateError{}
+				}
 				return room, nil
 			}
 		}
 	}
+	return nil, NotFoundError{roomName}
+}
 
-	a := app.New(roomName, "Welcome to ssh-mutlitodolist! 👋", false)
+func (m *Manager) CreateRoom(roomName string, private bool) (*Room, error) {
+	a := app.New(roomName, "Welcome to ssh-mutlitodolist! 👋", private)
 	r, err := m.repositoryFactory(roomName, a)
 	if err != nil {
 		return nil, err
 	}
-	room := newRoom(roomName, a, r)
+	room := newRoom(roomName, private, a, r)
 
 	m.rooms = append(m.rooms, room)
 	return room, nil

@@ -33,7 +33,7 @@ and make it reachable via ssh and multi-user
 # docker run -d --name redis-todo -p 6379:6379 redis
 [REDIS_ADDR="localhost:6379"] [REDIS_PASSWORD=""] [PORT=23234] go run main.go server [--db="file"|"redis"]
 # connect to server
-ssh -p23234 -t localhost [room]
+ssh -p23234 -t localhost [room] [privacy<true|1>]
 
 # standalone
 go run main.go standalone [room] [--db="file"|"redis"]

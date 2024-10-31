@@ -157,6 +157,18 @@ func authorizeUserMiddleware(next ssh.Handler) ssh.Handler {
 				return
 			}
 		}
+
+		// check invite
+		if len(s.Command()) > 2 {
+			invite := s.Command()[2]
+			err := r.Join(invite, s.User(), s.PublicKey())
+
+			if err == nil {
+				next(s)
+				return
+			}
+		}
+
 		fmt.Fprintln(s, "User not authorized.")
 		s.Exit(1)
 	}

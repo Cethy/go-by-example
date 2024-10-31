@@ -23,6 +23,7 @@ and make it reachable via ssh and multi-user
 - standalone mode (with multi-users UIs disabled)
 - multi-room(/files) setup
 - optional redis storage
+- private rooms (with invite code to share access)
 
 ## Usage
 
@@ -33,7 +34,7 @@ and make it reachable via ssh and multi-user
 # docker run -d --name redis-todo -p 6379:6379 redis
 [REDIS_ADDR="localhost:6379"] [REDIS_PASSWORD=""] [PORT=23234] go run main.go server [--db="file"|"redis"]
 # connect to server
-ssh -p23234 -t localhost [room] [privacy<true|1>]
+ssh -p23234 -t localhost [room] [privacy<true|1>] [inviteCode]
 
 # standalone
 go run main.go standalone [room] [--db="file"|"redis"]
@@ -41,10 +42,7 @@ go run main.go standalone [room] [--db="file"|"redis"]
 
 ## TODO
 
-- [ ] user management & authentication
-  - [ ] store user's pubkey
-  - [ ] public/private ROOM settings
-  - [ ] INVITE arg for first-time private room login
+- [ ] store/persist room data (private settings, users & chat historic)
 - [ ] https landing page ("go to ssh...")
 - [ ] header horizontal viewport
 - [ ] ctrl-enter behavior (submit and open input again)

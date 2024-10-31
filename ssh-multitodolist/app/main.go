@@ -2,6 +2,7 @@ package app
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/tjarratt/babble"
 	"sort"
 	"ssh-multitodolist/app/state"
 )
@@ -18,18 +19,23 @@ type user struct {
 }
 
 type App struct {
-	RoomName  string
-	IsPrivate bool
-	users     map[string]*user
-	chat      []message
+	RoomName   string
+	IsPrivate  bool
+	InviteCode string
+	users      map[string]*user
+	chat       []message
 }
 
 func New(roomName, welcomeMessage string, isPrivate bool) *App {
+	babbler := babble.NewBabbler()
+	babbler.Count = 3
+
 	return &App{
-		RoomName:  roomName,
-		IsPrivate: isPrivate,
-		users:     make(map[string]*user),
-		chat:      []message{{Message: welcomeMessage}},
+		RoomName:   roomName,
+		IsPrivate:  isPrivate,
+		InviteCode: babbler.Babble(),
+		users:      make(map[string]*user),
+		chat:       []message{{Message: welcomeMessage}},
 	}
 }
 

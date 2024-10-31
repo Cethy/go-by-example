@@ -121,6 +121,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		} else if !m.isAnyInputActive() {
 			switch {
+			case key.Matches(msg, m.keys.ShowInviteCode):
+				cmds = append(cmds, statusBar.NewStatusCmd("Invite code: "+m.app.InviteCode))
+
 			case key.Matches(msg, m.keys.Help):
 				// toggle help view
 				m.help.ShowAll = !m.help.ShowAll

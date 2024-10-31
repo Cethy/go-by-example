@@ -21,6 +21,14 @@ func newRoom(name string, private bool, app *app.App, repository data.Repository
 	return &Room{name, private, make(map[string]string), app, repository}
 }
 
+func (r *Room) Join(inviteCode, username string, key ssh.PublicKey) error {
+	if r.App.InviteCode == inviteCode {
+		r.Users[username] = string(ssh2.MarshalAuthorizedKey(key))
+		return nil
+	}
+	return fmt.Errorf("invalid invite code: %s", r.App.InviteCode)
+}
+
 type Manager struct {
 	rooms             []*Room
 	repositoryFactory func(roomName string, app *app.App) (data.Repository, error)

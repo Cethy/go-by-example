@@ -47,11 +47,15 @@ var serveSSHCmd = &cobra.Command{
 		s, err := wish.NewServer(
 			wish.WithAddress(net.JoinHostPort(host, port)),
 			wish.WithHostKeyPath(".ssh/id_ed25519"),
+			wish.WithPublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
+				return key != nil
+			}),
 			// app
 			wish.WithMiddleware(
 				applicationMiddleware(),
 				removeDisconnectedUsersMiddleware,
 				usernameAlreadyUsedMiddleware,
+				authorizeUserMiddleware,
 				selectRoomMiddleware,
 				contextMiddleware(roomManager),
 				activeterm.Middleware(),
@@ -119,10 +123,11 @@ func selectRoomMiddleware(next ssh.Handler) ssh.Handler {
 		if len(s.Command()) > 1 {
 			private = s.Command()[1] == "true" || s.Command()[1] == "1"
 		}
+
 		r, err := manager.SelectRoom(roomName, private)
-		var errComp room.NotFoundError
-		if errors.As(err, &errComp) {
-			r, err = manager.CreateRoom(roomName, private)
+		var errNotFound room.NotFoundError
+		if errors.As(err, &errNotFound) {
+			r, err = manager.CreateRoom(roomName, private, s.User(), s.PublicKey())
 		}
 		if err != nil {
 			fmt.Fprintln(s, err)
@@ -132,6 +137,28 @@ func selectRoomMiddleware(next ssh.Handler) ssh.Handler {
 		room.ContextSetRoom(ctx, r)
 
 		next(s)
+	}
+}
+
+func authorizeUserMiddleware(next ssh.Handler) ssh.Handler {
+	return func(s ssh.Session) {
+		r := room.RoomFromContext(s.Context())
+
+		if !r.Private {
+			next(s)
+		}
+
+		// check username too ?
+		for _, pubkey := range r.Users {
+			parsed, _, _, _, _ := ssh.ParseAuthorizedKey([]byte(pubkey))
+
+			if ssh.KeysEqual(s.PublicKey(), parsed) {
+				next(s)
+				return
+			}
+		}
+		fmt.Fprintln(s, "User not authorized.")
+		s.Exit(1)
 	}
 }
 

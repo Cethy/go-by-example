@@ -2,6 +2,8 @@ package room
 
 import (
 	"fmt"
+	"github.com/charmbracelet/ssh"
+	ssh2 "golang.org/x/crypto/ssh"
 	"regexp"
 	"ssh-multitodolist/app"
 	"ssh-multitodolist/data"
@@ -10,12 +12,13 @@ import (
 type Room struct {
 	name       string
 	Private    bool
+	Users      map[string]string
 	App        *app.App
 	Repository data.Repository
 }
 
 func newRoom(name string, private bool, app *app.App, repository data.Repository) *Room {
-	return &Room{name, private, app, repository}
+	return &Room{name, private, make(map[string]string), app, repository}
 }
 
 type Manager struct {
@@ -55,13 +58,25 @@ func (m *Manager) SelectRoom(roomName string, private bool) (*Room, error) {
 	return nil, NotFoundError{roomName}
 }
 
-func (m *Manager) CreateRoom(roomName string, private bool) (*Room, error) {
+type NoIdentityProvidedError struct{}
+
+func (e NoIdentityProvidedError) Error() string {
+	return fmt.Sprint("In order to connect to a private room, you must provide an identity (public key)")
+}
+
+func (m *Manager) CreateRoom(roomName string, private bool, userName string, key ssh.PublicKey) (*Room, error) {
+	if private && key == nil {
+		return nil, NoIdentityProvidedError{}
+	}
+
 	a := app.New(roomName, "Welcome to ssh-mutlitodolist! 👋", private)
 	r, err := m.repositoryFactory(roomName, a)
 	if err != nil {
 		return nil, err
 	}
 	room := newRoom(roomName, private, a, r)
+
+	room.Users[userName] = string(ssh2.MarshalAuthorizedKey(key))
 
 	m.rooms = append(m.rooms, room)
 	return room, nil

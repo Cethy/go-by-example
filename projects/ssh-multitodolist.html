@@ -50,6 +50,7 @@ and make it reachable via ssh and multi-user</p>
 <li class="">standalone mode (with multi-users UIs disabled)</li>
 <li class="">multi-room(/files) setup</li>
 <li class="">optional redis storage</li>
+<li class="">private rooms (with invite code to share access)</li>
 </ul>
 <h2 class="text-2xl font-bold">Usage</h2>
 <pre><code class="language-shell"># ssh server
@@ -58,20 +59,14 @@ and make it reachable via ssh and multi-user</p>
 # docker run -d --name redis-todo -p 6379:6379 redis
 [REDIS_ADDR=&quot;localhost:6379&quot;] [REDIS_PASSWORD=&quot;&quot;] [PORT=23234] go run main.go server [--db=&quot;file&quot;|&quot;redis&quot;]
 # connect to server
-ssh -p23234 -t localhost [room] [privacy&lt;true|1&gt;]
+ssh -p23234 -t localhost [room] [privacy&lt;true|1&gt;] [inviteCode]
 
 # standalone
 go run main.go standalone [room] [--db=&quot;file&quot;|&quot;redis&quot;]
 </code></pre>
 <h2 class="text-2xl font-bold">TODO</h2>
 <ul class="list-disc list-outside md:list-inside">
-<li class="">[ ] user management &amp; authentication
-<ul class="list-disc list-outside md:list-inside pl-4">
-<li class="">[ ] store user's pubkey</li>
-<li class="">[ ] public/private ROOM settings</li>
-<li class="">[ ] INVITE arg for first-time private room login</li>
-</ul>
-</li>
+<li class="">[ ] store/persist room data (private settings, users &amp; chat historic)</li>
 <li class="">[ ] https landing page (&quot;go to ssh...&quot;)</li>
 <li class="">[ ] header horizontal viewport</li>
 <li class="">[ ] ctrl-enter behavior (submit and open input again)</li>

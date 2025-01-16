@@ -4,7 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"github.com/forgoer/openssl"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -177,6 +179,39 @@ func challenge1_6() {
 	fmt.Println(r)
 }
 
+func challenge1_7() {
+	s, err := os.ReadFile("./files/7.txt")
+	if err != nil {
+		panic(err)
+	}
+	source, _ := base64.StdEncoding.DecodeString(string(s))
+	r, err := openssl.AesECBDecrypt(source, []byte("YELLOW SUBMARINE"), "")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(r))
+}
+
+func challenge1_8() {
+	src, err := os.ReadFile("./files/8.txt")
+	if err != nil {
+		panic(err)
+	}
+	for _, source := range strings.Split(string(src), "\n") {
+		// break into 16bytes blocks
+		var blocks []string
+		for i := 0; i < len(source); i += 16 {
+			nBlock := source[i:min(i+16, len(source))]
+			if slices.Contains(blocks, nBlock) {
+				fmt.Println("hit!", nBlock)
+				fmt.Println(source)
+				break
+			}
+			blocks = append(blocks, nBlock)
+		}
+	}
+}
+
 func main() {
 	//challenge1_1()
 	//challenge1_2()
@@ -184,5 +219,7 @@ func main() {
 	//challenge1_4()
 	//challenge1_5()
 	//challenge1_5_reverseUsingSingleByteXor()
-	challenge1_6()
+	//challenge1_6()
+	//challenge1_7()
+	challenge1_8()
 }
